@@ -1,3 +1,6 @@
+# PASSPORT
+https://soshace.com/securing-node-js-applications-with-jwt-and-passport-js/
+
 # Node.js Rest APIs with Express, Sequelize & MySQL example
 
 For more detail, please visit:
