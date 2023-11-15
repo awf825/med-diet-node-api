@@ -1,28 +1,92 @@
+CREATE TABLE user_auth_methods (
+  auth_method_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  auth_method_name VARCHAR(100)
+);
+
+INSERT INTO user_auth_methods (
+  auth_method_id, auth_method_name
+) VALUES 
+  (DEFAULT, "DEFAULT"),
+  (DEFAULT, "GOOGLE"),
+  (DEFAULT, "APPLE");
+
 CREATE TABLE users (
-  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  email VARCHAR(80) NOT NULL UNIQUE,
-  username VARCHAR(100) UNIQUE,
+  user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(80) NOT NULL,
+  username VARCHAR(100),
+  auth_method_id INT NOT NULL DEFAULT 1,
   password VARCHAR(16) NOT NULL UNIQUE,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE INDEX `idx_email` (`email`),
+  UNIQUE INDEX `idx_username` (`username`),
+  FOREIGN KEY (auth_method_id) REFERENCES user_auth_methods (auth_method_id)
 );
 
 INSERT INTO users (
-    id, email, username, password
+  user_id, email, username, auth_method_id, password
 ) VALUES (
-    DEFAULT, "user@user.com", "awf825", "password1"
+  DEFAULT, "user@user.com", "awf825", 1, "password1"
 );
 
--- CREATE TABLE questions (
---     question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
---     title VARCHAR(240) NOT NULL UNIQUE,
---     text VARCHAR(240) NOT NULL UNIQUE,
--- )
+CREATE TABLE question_field_types (
+  field_type_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  field_name VARCHAR(50) NOT NULL
+);
 
--- CREATE TABLE answers (
---     answer_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
---     question_id
--- )
+INSERT INTO question_field_types (
+  field_type_id, field_name
+) VALUES 
+  (DEFAULT, "NUMBER"),
+  (DEFAULT, "RADIO"),
+  (DEFAULT, "TEXT"),
+  (DEFAULT, "TEXTAREA"),
+  (DEFAULT, "SELECT");
 
--- CREATE TABLE question_answers (
+CREATE TABLE question_categories (
+  category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  category_name VARCHAR(100) NOT NULL
+);
 
--- )
+INSERT INTO question_categories (
+  category_id, category_name
+) VALUES 
+  (DEFAULT, "FOOD"),
+  (DEFAULT, "FLOURISHING"),
+  (DEFAULT, "DRINK"),
+  (DEFAULT, "ACTIVITY");
+
+CREATE TABLE questions (
+  question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  question_text VARCHAR(240) NOT NULL UNIQUE,
+  field_type_id INT NOT NULL,
+  category_id INT NOT NULL,
+  UNIQUE INDEX `idx_question_text` (`question_text`),
+  FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id),
+  FOREIGN KEY (category_id) REFERENCES question_categories (category_id)
+);
+
+INSERT INTO questions (
+  question_id, question_text, field_type_id, category_id
+) VALUES 
+  (DEFAULT, "How many times a day did you poop this week?", 1, 4),
+  (DEFAULT, "How many minutes this week have you spent meditating?", 1, 2),
+  (DEFAULT, "How many servings of red meat have you had this week?", 1, 1),
+  (DEFAULT, "Have you attended any religious services this week?", 2, 2),
+  (DEFAULT, "How many ounces of whole milk have you drank this week?", 1, 3),
+  (DEFAULT, "How many hours of physical exercise have you had this week?", 1, 4);
+
+CREATE TABLE question_answer_submissions (
+  submission_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  score INT,
+  completed_at TIMESTAMP DEFAULT NULL,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE question_answers (
+  answer_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  question_id INT NOT NULL, 
+  question_answer_submission_id INT NOT NULL, 
+  answer_text VARCHAR(265) DEFAULT NULL,
+  FOREIGN KEY (question_id) REFERENCES questions (question_id),
+  FOREIGN KEY (question_answer_submission_id) REFERENCES question_answer_submissions (submission_id)
+);
