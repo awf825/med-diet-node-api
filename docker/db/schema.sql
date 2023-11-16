@@ -58,22 +58,21 @@ INSERT INTO question_categories (
 CREATE TABLE questions (
   question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   question_text VARCHAR(240) NOT NULL UNIQUE,
-  field_type_id INT NOT NULL,
+  field_type VARCHAR(50) NOT NULL,
   category_id INT NOT NULL,
   UNIQUE INDEX `idx_question_text` (`question_text`),
-  FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id),
   FOREIGN KEY (category_id) REFERENCES question_categories (category_id)
 );
 
 INSERT INTO questions (
-  question_id, question_text, field_type_id, category_id
+  question_id, question_text, field_type, category_id
 ) VALUES 
-  (DEFAULT, "How many times a day did you poop this week?", 1, 4),
-  (DEFAULT, "How many minutes this week have you spent meditating?", 1, 2),
-  (DEFAULT, "How many servings of red meat have you had this week?", 1, 1),
-  (DEFAULT, "Have you attended any religious services this week?", 2, 2),
-  (DEFAULT, "How many ounces of whole milk have you drank this week?", 1, 3),
-  (DEFAULT, "How many hours of physical exercise have you had this week?", 1, 4);
+  (DEFAULT, "How many times a day did you poop this week?", "INT", 4),
+  (DEFAULT, "How many minutes this week have you spent meditating?", "INT", 2),
+  (DEFAULT, "How many servings of red meat have you had this week?", "INT", 1),
+  (DEFAULT, "Have you attended any religious services this week?", "TEXT", 2),
+  (DEFAULT, "How many ounces of whole milk have you drank this week?", "INT", 3),
+  (DEFAULT, "How many hours of physical exercise have you had this week?", "INT", 4);
 
 CREATE TABLE question_answer_submissions (
   submission_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,

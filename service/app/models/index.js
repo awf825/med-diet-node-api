@@ -22,5 +22,8 @@ db.sequelize = sequelize;
 
 db.tutorials = require("./tutorial.model.js")(sequelize, Sequelize);
 db.users = require("./user.model.js")(sequelize, Sequelize);
+db.questions = require("./question.model.js")(sequelize, Sequelize);
+db.fieldTypes = require("./fieldType.model.js")(sequelize, Sequelize);
+db.questionCategories = require("./questionCategory.model.js")(sequelize, Sequelize);
 
 module.exports = db;

@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
     const User = sequelize.define("user", {
-        id: {
+        user_id: {
           type: Sequelize.BIGINT,
           primaryKey: true
         },

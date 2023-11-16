@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
      
         const user = await User.findOne({
             where: {
-                username: username
+                username: 'awf825'
             }
         })
      
