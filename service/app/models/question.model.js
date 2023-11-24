@@ -13,6 +13,9 @@ module.exports = (sequelize, Sequelize) => {
         field_type: {
             type: Sequelize.STRING,
         },
+        field_code: {
+            type: Sequelize.STRING
+        },
         category_id: {
             type: Sequelize.INTEGER,
             references: 'question_category', // <<< Note, its table's name, not object name
