@@ -3,8 +3,8 @@ module.exports = app => {
 
   var router = require("express").Router();
 
-  // Create a new Tutorial
   router.post("/submit", submissions.submit);
+  router.get("/", submissions.getAll);
 
   app.use('/api/submissions', router);
 };
