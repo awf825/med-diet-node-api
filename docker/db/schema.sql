@@ -12,10 +12,10 @@ INSERT INTO user_auth_methods (
 
 CREATE TABLE users (
   user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  email VARCHAR(80) NOT NULL,
-  username VARCHAR(100),
+  email VARCHAR(80) DEFAULT NULL,
+  username VARCHAR(100) DEFAULT NULL,
   auth_method_id INT NOT NULL DEFAULT 1,
-  password VARCHAR(16) NOT NULL UNIQUE,
+  password VARCHAR(256) NOT NULL UNIQUE,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE INDEX `idx_email` (`email`),
   UNIQUE INDEX `idx_username` (`username`),
@@ -25,8 +25,10 @@ CREATE TABLE users (
 INSERT INTO users (
   user_id, email, username, auth_method_id, password
 ) VALUES (
-  DEFAULT, "user@user.com", "awf825", 1, "password1"
+  DEFAULT, "user@user.com", "awf825", 1, "$2a$10$DXgd1cwymsh1Ssa/QOO0weXXbnX8uU1nLf71aKn558QDWeZQtKtFa"
 );
+
+-- hash for 'password' ^^^
 
 CREATE TABLE question_field_types (
   field_type_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
