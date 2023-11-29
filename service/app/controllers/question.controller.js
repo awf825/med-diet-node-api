@@ -8,10 +8,9 @@ exports.findAll = (req, res) => {
       res.send(data);
     })
     .catch(err => {
-        console.log('err: ', err)
       res.status(500).send({
         message:
-          err.message || "Some error occurred while retrieving questions."
+          err.message || "Some error occurred while retrieving questions"
       });
     });
 };

@@ -4,21 +4,17 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const db = require("../models");
 const User = db.users;
 
-// const opts = {
-//   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-//   secretOrKey: process.env.NODE_JWT_SECRET
-// };
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.NODE_JWT_SECRET,
+  ignoreExpiration: true // means to an end here? only validate with google, microsoft, apple?
+};
  
 module.exports = passport => {
   passport.use(
     new JwtStrategy(
-        {
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: process.env.NODE_JWT_SECRET
-        },
+        opts,
         async (jwt_payload, done) => {
-            console.log('jwt_payload: ', jwt_payload)
-            //const user = users.find(u => u.username === jwt_payload.username);
             if (jwt_payload) {
                 const user = await User.findOne({
                     where: {
@@ -32,6 +28,7 @@ module.exports = passport => {
                     return done(null, false);
                 }
             } else {
+                console.log('token expired')
                 return done(null, false)
             }
         }

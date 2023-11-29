@@ -27,6 +27,7 @@ services:
       - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
       - DB_NAME=$MYSQLDB_DATABASE
       - DB_PORT=$MYSQLDB_DOCKER_PORT
+    command: "npm start"
     stdin_open: true
     tty: true
 

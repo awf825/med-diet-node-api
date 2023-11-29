@@ -18,8 +18,10 @@ module.exports = (sequelize, Sequelize) => {
         },
         category_id: {
             type: Sequelize.INTEGER,
-            references: 'question_category', // <<< Note, its table's name, not object name
-            referencesKey: 'category_id'
+            references: {
+                model: 'question_category',
+                key: 'category_id'
+            }
         }
     },
         {

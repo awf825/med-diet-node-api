@@ -1,8 +1,7 @@
-FROM node:14
+FROM node:18.12.1-alpine
 
 WORKDIR /app
 COPY package.json .
 RUN npm install
-COPY . .
+COPY . . 
 CMD npm start
-# CMD npm run dev

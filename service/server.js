@@ -23,7 +23,7 @@ require('./app/config/passport.config.js')(passport);
 app.use(passport.initialize());
 
 // simple route
-app.get("/", (req, res) => { res.json({ status: "GOOD" } ); });
+app.get("/", (req, res) => { res.json({ status: "GOO" } ); });
 require("./app/routes/turorial.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/auth.routes")(app);
