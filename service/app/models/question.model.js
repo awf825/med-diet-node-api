@@ -1,6 +1,3 @@
-const FieldType = require("./fieldType.model.js")
-const QuestionCategory = require("./questionCategory.model.js")
-
 module.exports = (sequelize, Sequelize) => {
     const Question = sequelize.define("question", {
         question_id: {
@@ -30,9 +27,6 @@ module.exports = (sequelize, Sequelize) => {
     );
 
     // Question.associate = (models) => {
-    //     Question.hasOne(models.question_field_type, {
-    //         foreignKey: "field_type_id"
-    //     })
     //     Question.hasOne(models.question_category)
     // }
 

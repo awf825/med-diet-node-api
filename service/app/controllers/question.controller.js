@@ -1,10 +1,11 @@
 const db = require("../models");
-const Question = db.questions;
+const Question = db.question;
 const Op = db.Sequelize.Op;
 
 exports.findAll = (req, res) => {
   Question.findAll()
-    .then(data => {
+  .then(data => {
+      console.log('data: ', data)
       res.send(data);
     })
     .catch(err => {

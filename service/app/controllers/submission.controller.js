@@ -1,14 +1,10 @@
 const db = require("../models");
-const Submission = db.submissions;
-const Answer = db.answers;
+const Submission = db.question_answer_submission;
+const Answer = db.question_answers;
 const Op = db.Sequelize.Op;
 
 exports.submit = async (req, res) => {
-    console.log('req.body: ', req.body)
     const submission = req.body;
-
-    console.log('score: ', submission.reduce((acc, curr) => { return acc + curr.answer_score }, 0))
-
     try {
         const insertedSubmission = await Submission.create({
             score: submission.reduce((acc, curr) => { return acc + curr.answer_score }, 0),
@@ -16,21 +12,23 @@ exports.submit = async (req, res) => {
         })
 
         if (insertedSubmission) {
-            await Answer.bulkCreate(
-                submission.map(
-                    s => {
-                        return {
-                            ...s,
-                            question_answer_submission_id: insertedSubmission.submission_id
-                        }
-                    }
-                )
+            submission.forEach(
+                async s => {
+                    await Answer.create({
+                        answer_score: s.answer_score,
+                        question_id: s.question_id,
+                        question_answer_submission_id: insertedSubmission.submission_id
+                    })
+                }
             )
+
+            // await Answer.bulkCreate(answers)
             res.json({
                 submission: insertedSubmission,
                 success: true
             })
         } else {
+            console.log('error: ', error)
             throw new Error("Submission could not be created")
         }
     } catch (err) {
@@ -39,7 +37,7 @@ exports.submit = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-    Submission.findAll()
+    Submission.scope('withAnswers').findAll()
         .then(data => {
             res.send(data);
         })
