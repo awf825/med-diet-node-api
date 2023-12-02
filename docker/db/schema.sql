@@ -80,12 +80,12 @@ INSERT INTO questions (
 CREATE TABLE question_answer_submissions (
   submission_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   score INT,
-  completed_at TIMESTAMP DEFAULT NULL,
+  completed_at TIMESTAMP NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE question_answers (
-  answer_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  answer_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   question_id INT NOT NULL, 
   question_answer_submission_id INT NOT NULL, 
   answer_score INT DEFAULT NULL,
