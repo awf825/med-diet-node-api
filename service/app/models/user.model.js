@@ -18,6 +18,13 @@ module.exports = (sequelize, Sequelize) => {
         timestamps: false
       }
     );
+
+    User.associate = function (models) {
+      User.hasMany(models.question_answer_submission, {
+        as: "question_answer_submissions",
+        foreignKey: "user_id"
+      })
+    }
   
     return User;
   };

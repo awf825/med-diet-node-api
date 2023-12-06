@@ -6,6 +6,13 @@ module.exports = (sequelize, Sequelize) => {
             primaryKey: true,
             autoIncrement: true
         },
+        user_id: {
+            type: Sequelize.INTEGER,
+            references: {
+                model: 'user',
+                key: 'user_id'
+            }
+        },
         score: {
             type: Sequelize.INTEGER
         },

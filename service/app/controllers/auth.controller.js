@@ -30,7 +30,10 @@ exports.register = async (req, res) => {
         throw new Error("ERROR");
       } else {
         const token = jwt.sign(
-          { username: user.username },
+          { 
+            username: user.username,
+            user_id: user.user_id 
+          },
           process.env.NODE_JWT_SECRET,
           {
             expiresIn: "1h",
@@ -40,7 +43,6 @@ exports.register = async (req, res) => {
           .status(201)
           .json({ message: "User registered successfully", token });
       }
-
     }
 
   } catch (e) {
@@ -70,7 +72,10 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { username: user.username },
+      { 
+        username: user.username,
+        user_id: user.user_id
+      },
       process.env.NODE_JWT_SECRET,
       {
         expiresIn: "1h",

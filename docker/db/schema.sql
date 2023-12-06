@@ -78,16 +78,18 @@ INSERT INTO questions (
   (DEFAULT, "How many hours of physical exercise have you had this week?", "INT", "exercise", 4);
 
 CREATE TABLE question_answer_submissions (
-  submission_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
   score INT,
   completed_at TIMESTAMP NOT NULL,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
 CREATE TABLE question_answers (
   answer_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   question_id INT NOT NULL, 
-  question_answer_submission_id INT NOT NULL, 
+  question_answer_submission_id INT UNSIGNED, 
   answer_score INT DEFAULT NULL,
   FOREIGN KEY (question_id) REFERENCES questions (question_id),
   FOREIGN KEY (question_answer_submission_id) REFERENCES question_answer_submissions (submission_id)
