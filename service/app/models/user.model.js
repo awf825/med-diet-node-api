@@ -12,6 +12,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         password: {
           type: Sequelize.STRING
+        },
+        auth_method_id: {
+          type: Sequelize.INTEGER
         }
       }, 
       {

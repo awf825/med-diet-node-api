@@ -46,34 +46,41 @@ module.exports = passport => {
           },
           async (accessToken, refreshToken, profile, done) => {
             console.log('=== BEGIN GOOGLE STRATEGY ===')
-            console.log('accessToken: ', accessToken)
-            console.log('refreshToken: ', refreshToken);
+            // console.log('accessToken: ', accessToken)
+            // console.log('refreshToken: ', refreshToken);
             console.log('profile: ', profile);
             console.log('=== END GOOGLE STRATEGY ===')
             //sequelize query for user
                 // if found, continue with -> return done(null, existingUser);
             // otherwise create newUser and -> return done(null, newUser)
-
-            // TOKEN SEND UP HERE!!!
-            return done(
-              null,
-              {
-                username: 'awf825',
-                userId: 1
+            const existingUser = await User.findOne({
+              where: {
+                email: profile.email
               }
-            )
+            })
 
+            if (existingUser) {
+              console.log('existingUser: ', existingUser)
+              return done(null, {
+                userId: existingUser.user_id,
+                email: existingUser.email,
+                username: existingUser.username
+              })
+            } else {
+              const newUser = await User.create({
+                email: profile.email,
+                auth_method_id: 2,
+                password: "",
+                username: profile.given_name+" "+profile.family_name
+              })
+              console.log('newUser: ', newUser)
+              return done(null, {
+                userId: newUser.user_id,
+                email: newUser.email,
+                username: newUser.username
+              })
 
-            // console.log(profile);
-            // try {
-            //   const oldUser = await User.findOne({ email: profile.email });
-        
-            //   if (oldUser) {
-            //     return done(null, oldUser);
-            //   }
-            // } catch (err) {
-            //   console.log(err);
-            // }
+            }
           },
     )
   )

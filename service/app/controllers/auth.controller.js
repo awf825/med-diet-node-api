@@ -32,12 +32,9 @@ exports.register = async (req, res) => {
         const token = jwt.sign(
           { 
             username: user.username,
-            user_id: user.user_id 
+            user_id: user.user_id
           },
-          process.env.NODE_JWT_SECRET,
-          {
-            expiresIn: "1h",
-          }
+          process.env.NODE_JWT_SECRET
         );
         return res
           .status(201)
@@ -76,10 +73,7 @@ exports.login = async (req, res) => {
         username: user.username,
         user_id: user.user_id
       },
-      process.env.NODE_JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+      process.env.NODE_JWT_SECRET
     );
 
     res.json({ message: "Logged in successfully", token });
