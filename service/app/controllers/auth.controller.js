@@ -50,16 +50,16 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     const user = await User.findOne({
       where: {
-        username: username
+        email: email
       }
     })
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid username or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -70,7 +70,7 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       { 
-        username: user.username,
+        email: user.email,
         user_id: user.user_id
       },
       process.env.NODE_JWT_SECRET
@@ -84,11 +84,11 @@ exports.login = async (req, res) => {
 
 exports.googleLogin = async (req, res) => {
   try {
-    const username = req.body.username;
+    const email = req.body.email;
 
     const user = await User.findOne({
       where: {
-        username: username
+        email: email
       }
     })
 
@@ -98,7 +98,7 @@ exports.googleLogin = async (req, res) => {
 
     const token = jwt.sign(
       { 
-        username: user.username,
+        email: user.email,
         user_id: user.user_id
       },
       process.env.NODE_JWT_SECRET

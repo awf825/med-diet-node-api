@@ -24,7 +24,7 @@ module.exports = app => {
         }),
         (req, res) => {
             res.redirect(
-              `meddiet://app/login?userId=${req.user.userId}/username=${req.user.username}`
+              `meddiet://app/login?userId=${req.user.userId}/email=${req.user.email}`
             );
         },
     );
