@@ -4,6 +4,7 @@ const GoogleStrategy = require('passport-google-oauth2').Strategy;
  
 const db = require("../models");
 const User = db.user;
+const jwt = require('jsonwebtoken');
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -57,9 +58,8 @@ module.exports = passport => {
             return done(
               null,
               {
-                firstName: profile.given_name,
-                lastName: profile.last_name,
-                email: profile.email
+                username: 'awf825',
+                userId: 1
               }
             )
 

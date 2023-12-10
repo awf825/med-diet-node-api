@@ -87,3 +87,32 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 }
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const username = req.body.username;
+
+    const user = await User.findOne({
+      where: {
+        username: username
+      }
+    })
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+      { 
+        username: user.username,
+        user_id: user.user_id
+      },
+      process.env.NODE_JWT_SECRET
+    );
+
+    res.json({ message: "Logged in successfully", token });
+  } catch (e) {
+    console.log('e: ', e)
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+}

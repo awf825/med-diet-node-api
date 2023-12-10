@@ -7,6 +7,7 @@ module.exports = app => {
   
     router.post("/register", auth.register);
     router.post("/login", auth.login);
+    router.post("/googleLogin", auth.googleLogin);
 
     router.get(
         '/google',
@@ -22,9 +23,8 @@ module.exports = app => {
           session: false,
         }),
         (req, res) => {
-            console.log('req.user @ google callback: ', req.user)
             res.redirect(
-              `meddiet://app/login?firstName=${req.user.firstName}/lastName=${req.user.lastName}/email=${req.user.email}`
+              `meddiet://app/login?userId=${req.user.userId}/username=${req.user.username}`
             );
         },
     );
