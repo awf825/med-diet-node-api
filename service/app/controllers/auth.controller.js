@@ -7,13 +7,13 @@ const bcrypt = require('bcryptjs');
 
 exports.register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let user = await User.findOne({
       where: {
-        username: username,
+        email: email,
         password: hashedPassword
       }
     })
@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     } else {
       user = await User.create({
-        username: username,
+        email: email,
         password: hashedPassword
       })
 
@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
       } else {
         const token = jwt.sign(
           { 
-            username: user.username,
+            email: user.email,
             user_id: user.user_id
           },
           process.env.NODE_JWT_SECRET
