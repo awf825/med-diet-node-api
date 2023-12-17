@@ -1,5 +1,4 @@
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
 
 module.exports = app => {
     const auth = require("../controllers/auth.controller.js");
@@ -7,8 +6,9 @@ module.exports = app => {
   
     router.post("/register", auth.register);
     router.post("/login", auth.login);
-    router.post("/googleLogin", auth.googleLogin);
 
+    /* GOOGLE */
+    router.post("/googleLogin", auth.googleLogin);
     router.get(
         '/google',
         passport.authenticate('google', {
@@ -28,6 +28,10 @@ module.exports = app => {
             );
         },
     );
+
+    /* APPLE */
+    router.post("/appleLogin", auth.appleLogin);
+    router.post("/appleRegister", auth.appleRegister);
   
     app.use('/api/auth', router);
 };

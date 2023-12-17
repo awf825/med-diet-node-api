@@ -15,6 +15,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         auth_method_id: {
           type: Sequelize.INTEGER
+        },
+        apple_user_id: {
+          type: Sequelize.INTEGER
         }
       }, 
       {
