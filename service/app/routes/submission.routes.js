@@ -1,4 +1,3 @@
-const passport = require('passport');
 const middleware = require('./middleware.js');
 
 module.exports = app => {
