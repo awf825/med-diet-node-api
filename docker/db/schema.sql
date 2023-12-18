@@ -10,16 +10,37 @@ INSERT INTO user_auth_methods (
   (DEFAULT, "GOOGLE"),
   (DEFAULT, "APPLE");
 
+CREATE TABLE genders (
+  gender_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  gender_name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO genders (
+  gender_id, gender_name
+) VALUES 
+  (DEFAULT, "MALE"),
+  (DEFAULT, "FEMALE"),
+  (DEFAULT, "TRANSGENDER"),
+  (DEFAULT, "NON-BINARY/NON-CONFORMING"),
+  (DEFAULT, "PREFER NOT TO SAY");
+
 CREATE TABLE users (
   user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   email VARCHAR(80) DEFAULT NULL,
   username VARCHAR(100) DEFAULT NULL,
+  first_name VARCHAR(100) DEFAULT NULL,
+  last_name VARCHAR(100) DEFAULT NULL,
+  gender_id INT DEFAULT NULL,
   auth_method_id INT NOT NULL DEFAULT 1,
+  apple_user_id VARCHAR(356) DEFAULT NULL,
+  google_user_id VARCHAR(356) DEFAULT NULL,
+  google_profile_picture_url VARCHAR(256) DEFAULT NULL,
   password VARCHAR(256) NOT NULL UNIQUE,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE INDEX `idx_email` (`email`),
   UNIQUE INDEX `idx_username` (`username`),
-  FOREIGN KEY (auth_method_id) REFERENCES user_auth_methods (auth_method_id)
+  FOREIGN KEY (auth_method_id) REFERENCES user_auth_methods (auth_method_id),
+  FOREIGN KEY (gender_id) REFERENCES genders (gender_id)
 );
 
 INSERT INTO users (
