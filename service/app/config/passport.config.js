@@ -4,7 +4,7 @@ const GoogleStrategy = require('passport-google-oauth2').Strategy;
  
 const db = require("../models");
 const User = db.user;
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -45,14 +45,6 @@ module.exports = passport => {
             callbackURL: `http://localhost:8080/api/auth/google/callback`
           },
           async (accessToken, refreshToken, profile, done) => {
-            console.log('=== BEGIN GOOGLE STRATEGY ===')
-            // console.log('accessToken: ', accessToken)
-            // console.log('refreshToken: ', refreshToken);
-            console.log('profile: ', profile);
-            console.log('=== END GOOGLE STRATEGY ===')
-            //sequelize query for user
-                // if found, continue with -> return done(null, existingUser);
-            // otherwise create newUser and -> return done(null, newUser)
             const existingUser = await User.findOne({
               where: {
                 email: profile.email
@@ -60,24 +52,33 @@ module.exports = passport => {
             })
 
             if (existingUser) {
-              console.log('existingUser: ', existingUser)
-              return done(null, {
-                userId: existingUser.user_id,
-                email: existingUser.email,
-                username: existingUser.username
-              })
+              console.log('LOGGING IN')
+              const passwordMatch = await bcrypt.compare(profile.id, existingUser.password);
+  
+              if (passwordMatch) {
+                return done(null, {
+                  userId: existingUser.user_id,
+                  email: existingUser.email
+                })
+              } else {
+                return done(null, false);
+              }
             } else {
+              console.log('CREATING USER')
+              const hashedPassword = await bcrypt.hash(profile.id, 10);
               const newUser = await User.create({
                 email: profile.email,
                 auth_method_id: 2,
-                password: "",
-                username: profile.given_name+" "+profile.family_name
+                first_name: profile.given_name,
+                last_name: profile.family_name,
+                google_user_id: profile.id,
+                google_profile_picture_url: profile.picture,
+                password: hashedPassword
               })
-              console.log('newUser: ', newUser)
+
               return done(null, {
                 userId: newUser.user_id,
-                email: newUser.email,
-                username: newUser.username
+                email: newUser.email
               })
 
             }

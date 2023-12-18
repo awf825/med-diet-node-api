@@ -7,6 +7,15 @@ module.exports = (sequelize, Sequelize) => {
         email: {
           type: Sequelize.STRING
         },
+        first_name: {
+          type: Sequelize.STRING
+        },
+        last_name: {
+          type: Sequelize.STRING
+        },
+        gender_id: {
+          type: Sequelize.INTEGER
+        },
         username: {
           type: Sequelize.STRING
         },
@@ -18,6 +27,12 @@ module.exports = (sequelize, Sequelize) => {
         },
         apple_user_id: {
           type: Sequelize.INTEGER
+        },
+        google_user_id: {
+          type: Sequelize.INTEGER
+        },
+        google_profile_picture_url: {
+          type: Sequelize.STRING
         }
       }, 
       {
