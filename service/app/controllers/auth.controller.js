@@ -113,7 +113,12 @@ exports.googleLogin = async (req, res) => {
 
 exports.appleRegister = async (req, res) => {
   try {
-    const { apple_user_id, email } = req.body;
+    const { 
+      apple_user_id, 
+      email,
+      first_name,
+      last_name
+    } = req.body;
     let token = null;
 
     const existingUser = await User.findOne({
@@ -129,12 +134,14 @@ exports.appleRegister = async (req, res) => {
     } else if (!email) {
       return res.status(422).json({ message: "Must pass an email." });
     } else {
-      console.log(console.log('server side user creation apple_user_id, email: ', apple_user_id, email))
+      console.log('CREATING USER APPLE');
       const hashedPassword = await bcrypt.hash(apple_user_id, 10);
       let newUser = await User.create({
         email: email,
         apple_user_id: apple_user_id,
         password: hashedPassword,
+        first_name: first_name,
+        last_name: last_name,
         auth_method_id: 3
       })
 
