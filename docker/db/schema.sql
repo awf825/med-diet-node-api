@@ -36,6 +36,8 @@ CREATE TABLE users (
   google_user_id VARCHAR(356) DEFAULT NULL,
   google_profile_picture_url VARCHAR(256) DEFAULT NULL,
   password VARCHAR(256) NOT NULL UNIQUE,
+  do_not_use TINYINT(1) NOT NULL DEFAULT 0,
+  ffq_complete TINYINT(1) DEFAULT 0,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE INDEX `idx_email` (`email`),
   UNIQUE INDEX `idx_username` (`username`),
@@ -48,8 +50,34 @@ INSERT INTO users (
 ) VALUES (
   DEFAULT, "user@user.com", "awf825", 1, "$2a$10$DXgd1cwymsh1Ssa/QOO0weXXbnX8uU1nLf71aKn558QDWeZQtKtFa"
 );
-
 -- hash for 'password' ^^^
+
+CREATE TABLE forms (
+  form_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  form_name VARCHAR(50) NOT NULL
+);
+
+INSERT INTO forms (
+  form_id, form_name
+) VALUES 
+  (DEFAULT, "FFQ"),
+  (DEFAULT, "Weekly");
+
+
+CREATE TABLE question_categories (
+  category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  category_name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO question_categories (
+  category_id, category_name
+) VALUES 
+  (DEFAULT, "FOOD"),
+  (DEFAULT, "FLOURISHING"),
+  (DEFAULT, "DRINK"),
+  (DEFAULT, "ACTIVITY"),
+  (DEFAULT, "FFQ"), /* ffq -> multiple radio */
+  (DEFAULT, "USER");
 
 CREATE TABLE question_field_types (
   field_type_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -63,40 +91,71 @@ INSERT INTO question_field_types (
   (DEFAULT, "RADIO"),
   (DEFAULT, "TEXT"),
   (DEFAULT, "TEXTAREA"),
-  (DEFAULT, "SELECT");
+  (DEFAULT, "DOB"),
+  (DEFAULT, "SELECT"),
+  (DEFAULT, "FFQ-FREQ-A"), /* NEVER, 1-6 times per year, once a month, etc*/
+  (DEFAULT, "FFQ-FREQ-B"), /* NEVER, 1 time per month or less, etc*/
+  (DEFAULT, "FFQ-FREQ-C"), /* almost never or never, about 1/4 of the time */
+  (DEFAULT, "FFQ-STANDARD"), /* 1/2 cup, 1 cup etc*/
+  (DEFAULT, "FFQ-METRIC"), /* 1 liter, 2 liter, etc */
+  (DEFAULT, "FFQ-UNITS"); /* 1 unit of alcohol, 2 units of alcohol, etc */
 
-CREATE TABLE question_categories (
-  category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  category_name VARCHAR(100) NOT NULL
+CREATE TABLE question_answer_options (
+  option_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  field_type_id INT NOT NULL,
+  option_text VARCHAR(100) NOT NULL,
+  ordering INT NOT NULL, 
+  FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id)
 );
 
-INSERT INTO question_categories (
-  category_id, category_name
+INSERT INTO question_answer_options (
+  option_id, field_type_id, option_text, ordering
 ) VALUES 
-  (DEFAULT, "FOOD"),
-  (DEFAULT, "FLOURISHING"),
-  (DEFAULT, "DRINK"),
-  (DEFAULT, "ACTIVITY");
+  (DEFAULT, 7, "NEVER", 1),                      /* BEGIN FFQ-FREQ-A */
+  (DEFAULT, 7, "1-6 times per year", 2),
+  (DEFAULT, 7, "7-11 times per year", 3),
+  (DEFAULT, 7, "Once per month", 4),
+  (DEFAULT, 7, "2-3 times per month", 5),
+  (DEFAULT, 7, "1 time per week", 6),
+  (DEFAULT, 7, "Twice per week", 7),
+  (DEFAULT, 7, "3-4 times per week", 8),
+  (DEFAULT, 7, "5-6 times per week", 9),
+  (DEFAULT, 7, "1 time per day", 10),
+  (DEFAULT, 7, "2 or more times per day", 11),  /* END FFQ-FREQ-A */
+  (DEFAULT, 8, "Almost never or never", 1),       /* BEGIN FFQ-FREQ-B */
+  (DEFAULT, 8, "About 1/4 of the time", 2),
+  (DEFAULT, 8, "About 1/2 of the time", 3),
+  (DEFAULT, 8, "About 3/4 of the time", 4),
+  (DEFAULT, 8, "Almost always or always", 5),     /* END FFQ-FREQ-B */
+  (DEFAULT, 9, "NEVER", 1),                         /* BEGIN FFQ-FREQ-C */
+  (DEFAULT, 9, "1 time per month", 2),
+  (DEFAULT, 9, "2-3 times per month", 3),
+  (DEFAULT, 9, "1-2 times per week", 4),
+  (DEFAULT, 9, "3-4 times perr week", 5),
+  (DEFAULT, 9, "5-6 times per week", 6),
+  (DEFAULT, 9, "1 time per day", 7),
+  (DEFAULT, 9, "2-3 times per day", 8),
+  (DEFAULT, 9, "4-5 times per day", 9),
+  (DEFAULT, 9, "6 or more times per day", 10);      /* END FFQ-FREQ-C */
 
 CREATE TABLE questions (
   question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  question_text VARCHAR(240) NOT NULL UNIQUE,
-  field_type VARCHAR(50) NOT NULL,
-  field_code VARCHAR(20) NOT NULL,
+  question_text VARCHAR(540) NOT NULL UNIQUE,
   category_id INT NOT NULL,
+  field_type_id INT NOT NULL,
+  form_id INT NOT NULL,
   UNIQUE INDEX `idx_question_text` (`question_text`),
-  FOREIGN KEY (category_id) REFERENCES question_categories (category_id)
+  FOREIGN KEY (category_id) REFERENCES question_categories (category_id),
+  FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id),
+  FOREIGN KEY (form_id) REFERENCES forms (form_id)
 );
 
 INSERT INTO questions (
-  question_id, question_text, field_type, field_code, category_id
+  question_id, question_text, category_id, field_type_id, form_id
 ) VALUES 
-  (DEFAULT, "How many times a day did you poop this week?", "INT", "poop", 4),
-  (DEFAULT, "How many minutes this week have you spent meditating?", "INT", "meditate", 2),
-  (DEFAULT, "How many servings of red meat have you had this week?", "INT", "redmeat", 1),
-  (DEFAULT, "Have you attended any religious services this week?", "TEXT", "religious", 2),
-  (DEFAULT, "How many ounces of whole milk have you drank this week?", "INT", "milk", 3),
-  (DEFAULT, "How many hours of physical exercise have you had this week?", "INT", "exercise", 4);
+  (DEFAULT, "How often did you eat baked ham or ham steak?", 4, 7, 1),
+  (DEFAULT, "How often were the soups you ate cream soups (including chowders)?", 4, 8, 1),
+  (DEFAULT, "How often did you drink beer IN THE SUMMER?", 4, 9, 1);
 
 CREATE TABLE question_answer_submissions (
   submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
