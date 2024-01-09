@@ -15,9 +15,17 @@ module.exports = (sequelize, Sequelize) => {
         }
     );
 
-    // FieldType.associate = (models) => {
-    //     FieldType.belongsTo(models.question);
-    // }
+    FieldType.associate = (models) => {
+        FieldType.belongsTo(models.question, {
+            as: "question",
+            foreignKey: "field_type_id"
+        });
+
+        FieldType.hasMany(models.question_answer_options, { 
+            as: "question_answer_options",
+            foreignKey: "field_type_id"
+        });
+    }
 
     return FieldType;
 };

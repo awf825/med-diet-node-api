@@ -7,11 +7,8 @@ module.exports = (sequelize, Sequelize) => {
         question_text: {
             type: Sequelize.STRING
         },
-        field_type: {
-            type: Sequelize.STRING,
-        },
-        field_code: {
-            type: Sequelize.STRING
+        field_type_id: {
+            type: Sequelize.INTEGER,
         },
         category_id: {
             type: Sequelize.INTEGER,
@@ -26,16 +23,30 @@ module.exports = (sequelize, Sequelize) => {
         }
     );
 
-    // Question.associate = (models) => {
-    //     Question.hasOne(models.question_category)
-    // }
+    Question.associate = (models) => {
+        Question.hasOne(models.question_field_type, {
+            as: "question_field_type",
+            sourceKey: "field_type_id",
+            foreignKey: "field_type_id"
+        })
 
-    // Question.addScope('withFieldTypesAndCategories', {
-    //     include: [
-    //         { model: models.question_field_type },
-    //         { model: models.question_category }
-    //     ]
-    // });
+        Question.addScope('withFieldTypeAndAnswerOptions', {
+            include: [
+                { 
+                    model: models.question_field_type,
+                    as: "question_field_type",
+                    required: true,
+                    include: [
+                        {
+                            model: models.question_answer_options,
+                            as: "question_answer_options"
+                        }
+                    ]
+                },
+            ]
+        });
+    }
+
 
     
     return Question;
