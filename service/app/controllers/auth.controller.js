@@ -38,7 +38,11 @@ exports.register = async (req, res) => {
         );
         return res
           .status(201)
-          .json({ message: "User registered successfully", token });
+          .json({ 
+            message: "User registered successfully", 
+            user: user,
+            token 
+          });
       }
     }
 
@@ -76,7 +80,11 @@ exports.login = async (req, res) => {
       process.env.NODE_JWT_SECRET
     );
 
-    res.json({ message: "Logged in successfully", token });
+    res.json({ 
+      message: "Logged in successfully", 
+      user: user,
+      token 
+    });
   } catch (e) {
     return res.status(500).json({ message: "Something went wrong." });
   }
@@ -104,7 +112,11 @@ exports.googleLogin = async (req, res) => {
       process.env.NODE_JWT_SECRET
     );
 
-    res.json({ message: "Logged in successfully", token });
+    res.json({ 
+      message: "Logged in successfully", 
+      user: user,
+      token 
+    });
   } catch (e) {
     console.log('e: ', e)
     return res.status(500).json({ message: "Something went wrong." });
@@ -160,7 +172,11 @@ exports.appleRegister = async (req, res) => {
     }
 
     return token ?
-      res.status(201).json({ message: "Successfully registered with Apple ID.", token }) :
+      res.status(201).json({
+        message: "Successfully registered with Apple ID.", 
+        user: newUser,
+        token 
+      }) :
       res.status(500).json({ message: "Could not authenticate with Apple ID." });
 
   } catch (e) {
@@ -199,7 +215,11 @@ exports.appleLogin = async (req, res) => {
     }
         
     return token ?
-      res.status(201).json({ message: "Successfully logged in with Apple ID.", token }) :
+      res.status(201).json({ 
+        user: existingUser || null,
+        message: "Successfully logged in with Apple ID.", 
+        token 
+      }) :
       res.status(500).json({ message: "Could not authenticate with Apple ID." });
 
   } catch (e) {

@@ -33,6 +33,12 @@ module.exports = (sequelize, Sequelize) => {
         },
         google_profile_picture_url: {
           type: Sequelize.STRING
+        },
+        do_not_use: {
+          type: Sequelize.INTEGER
+        },
+        ffq_complete: {
+          type: Sequelize.INTEGER
         }
       }, 
       {
