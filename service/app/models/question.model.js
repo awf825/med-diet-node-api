@@ -10,6 +10,9 @@ module.exports = (sequelize, Sequelize) => {
         field_type_id: {
             type: Sequelize.INTEGER,
         },
+        field_code: {
+            type: Sequelize.STRING,
+        },
         category_id: {
             type: Sequelize.INTEGER,
             references: {
