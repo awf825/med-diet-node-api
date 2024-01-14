@@ -1,13 +1,17 @@
 const db = require("../models");
 const Submission = db.question_answer_submission;
 const Answer = db.question_answers;
+const User = db.user;
 const Op = db.Sequelize.Op;
 
 exports.submit = async (req, res) => {
     const submission = req.body;
+    console.log('submission: ', submission)
     try {
         const insertedSubmission = await Submission.create({
-            user_id: req.user.user_id,
+            // user_id: req.user.user_id,
+            user_id: 1, // hardcoding for now as I expose these routes
+            form_id: submission[0].form_id,
             score: submission.reduce((acc, curr) => { return acc + curr.answer_score }, 0),
             completed_at: db.sequelize.fn('NOW')
         })
@@ -23,6 +27,14 @@ exports.submit = async (req, res) => {
                 })
             )
 
+            await User.update({
+                ffq_complete: 1
+            }, {
+                where: {
+                    user_id: 1 // again, hardcoding 1 for now
+                }
+            })
+
             res.json({
                 submission: insertedSubmission,
                 success: true
@@ -32,17 +44,19 @@ exports.submit = async (req, res) => {
             console.log('error: ', error)
             throw new Error("Submission could not be created")
         }
+
     } catch (err) {
         res.json({ message: err.message, success: false })
     }
 };
 
 exports.getAll = async (req, res) => {
-    Submission.scope('withAnswers').findAll({
-        where: {
-            user_id: req.user.user_id
-        }
-    })
+    // Submission.scope('withAnswers').findAll({
+    //     where: {
+    //         user_id: req.user.user_id
+    //     }
+    // })
+    Submission.scope('withAnswers').findAll()
     .then(data => {
         res.send(data);
     })

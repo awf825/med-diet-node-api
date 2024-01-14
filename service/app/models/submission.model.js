@@ -13,6 +13,9 @@ module.exports = (sequelize, Sequelize) => {
                 key: 'user_id'
             }
         },
+        form_id: {
+            type: Sequelize.INTEGER,
+        },
         score: {
             type: Sequelize.INTEGER
         },

@@ -63,7 +63,6 @@ INSERT INTO forms (
   (DEFAULT, "FFQ"),
   (DEFAULT, "Weekly");
 
-
 CREATE TABLE question_categories (
   category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   category_name VARCHAR(100) NOT NULL
@@ -143,6 +142,7 @@ CREATE TABLE questions (
   question_text VARCHAR(540) NOT NULL UNIQUE,
   category_id INT NOT NULL,
   field_type_id INT NOT NULL,
+  field_code VARCHAR(15) NOT NULL,
   form_id INT NOT NULL,
   UNIQUE INDEX `idx_question_text` (`question_text`),
   FOREIGN KEY (category_id) REFERENCES question_categories (category_id),
@@ -160,6 +160,7 @@ INSERT INTO questions (
 CREATE TABLE question_answer_submissions (
   submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
+  form_id INT NOT NULL,
   score INT,
   completed_at TIMESTAMP NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
