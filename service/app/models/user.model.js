@@ -13,9 +13,6 @@ module.exports = (sequelize, Sequelize) => {
         last_name: {
           type: Sequelize.STRING
         },
-        gender_id: {
-          type: Sequelize.INTEGER
-        },
         username: {
           type: Sequelize.STRING
         },
@@ -39,6 +36,12 @@ module.exports = (sequelize, Sequelize) => {
         },
         ffq_complete: {
           type: Sequelize.INTEGER
+        },
+        gender: {
+          type: Sequelize.STRING
+        },
+        dob: {
+          type: Sequelize.DATE
         }
       }, 
       {

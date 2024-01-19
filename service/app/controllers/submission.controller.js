@@ -5,20 +5,20 @@ const User = db.user;
 const Op = db.Sequelize.Op;
 
 exports.submit = async (req, res) => {
-    const submission = req.body;
-    console.log('submission: ', submission)
+    const { answers, dob, gender } = req.body;
+
     try {
         const insertedSubmission = await Submission.create({
             // user_id: req.user.user_id,
             user_id: 1, // hardcoding for now as I expose these routes
-            form_id: submission[0].form_id,
-            score: submission.reduce((acc, curr) => { return acc + curr.answer_score }, 0),
+            form_id: answers[0].form_id,
+            score: answers.reduce((acc, curr) => { return acc + curr.answer_score }, 0),
             completed_at: db.sequelize.fn('NOW')
         })
 
         if (insertedSubmission) {
             await Answer.bulkCreate(
-                submission.map(s => {
+                answers.map(s => {
                     return {
                         answer_score: s.answer_score,
                         question_id: s.question_id,
@@ -28,6 +28,8 @@ exports.submit = async (req, res) => {
             )
 
             await User.update({
+                gender: gender,
+                dob: new Date(dob),
                 ffq_complete: 1
             }, {
                 where: {
