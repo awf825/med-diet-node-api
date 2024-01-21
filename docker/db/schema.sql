@@ -39,6 +39,7 @@ CREATE TABLE users (
   ffq_complete TINYINT(1) DEFAULT 0,
   dob DATE DEFAULT NULL,
   gender VARCHAR(50) DEFAULT NULL,
+  origin VARCHAR(100) DEFAULT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE INDEX `idx_email` (`email`),
   UNIQUE INDEX `idx_username` (`username`),
@@ -92,7 +93,7 @@ INSERT INTO question_field_types (
   (DEFAULT, "TEXT"),
   (DEFAULT, "TEXTAREA"),
   (DEFAULT, "DOB"),
-  (DEFAULT, "SELECT"),
+  (DEFAULT, "SELECT-ORIGIN"),
   (DEFAULT, "FFQ-FREQ-A"), /* NEVER, 1-6 times per year, once a month, etc*/
   (DEFAULT, "FFQ-FREQ-B"), /* NEVER, 1 time per month or less, etc*/
   (DEFAULT, "FFQ-FREQ-C"), /* almost never or never, about 1/4 of the time */
@@ -109,9 +110,20 @@ CREATE TABLE question_answer_options (
   FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id)
 );
 
+/*
+  In development, I have "ordering" ultimately being recorded as the value the from
+  takes in. This is probably better suited to its own column
+
+  If ordering is "-1", this is not a selection, and will be validated as such by formik
+*/
+
 INSERT INTO question_answer_options (
   option_id, field_type_id, option_text, ordering
 ) VALUES 
+  (DEFAULT, 6, "Please select an option", -1),   /* BEGIN SELECT-ORIGIN */    
+  (DEFAULT, 6, "United States", 1),
+  (DEFAULT, 6, "Spain", 2),
+  (DEFAULT, 6, "Austrailia", 3),                 /* END SELECT-ORIGIN */
   (DEFAULT, 7, "NEVER", 1),                      /* BEGIN FFQ-FREQ-A */
   (DEFAULT, 7, "1-6 times per year", 2),
   (DEFAULT, 7, "7-11 times per year", 3),
@@ -138,11 +150,11 @@ INSERT INTO question_answer_options (
   (DEFAULT, 9, "2-3 times per day", 8),
   (DEFAULT, 9, "4-5 times per day", 9),
   (DEFAULT, 9, "6 or more times per day", 10);      /* END FFQ-FREQ-C */
-  (DEFAULT, 13, "Male", 1),
+  (DEFAULT, 13, "Male", 1),                     /* BEGIN GENDER */
   (DEFAULT, 13, "Female", 2),
   (DEFAULT, 13, "Transgender", 3),
   (DEFAULT, 13, "Binary/Non-conforming", 4),
-  (DEFAULT, 13, "Prefer not to say", 5);
+  (DEFAULT, 13, "Prefer not to say", 5);        /* END GENDER */
 
 CREATE TABLE questions (
   question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -164,7 +176,8 @@ INSERT INTO questions (
   (DEFAULT, "How often were the soups you ate cream soups (including chowders)?", 4, 8, "creamsoup", 1),
   (DEFAULT, "How often did you drink beer IN THE SUMMER?", 4, 9, "beer", 1),
   (DEFAULT, "Please select your gender.", 6, 13, "gender", 1),
-  (DEFAULT, "PLease select your date of birth.", 6, 5, "dob", 1);
+  (DEFAULT, "PLease select your date of birth.", 6, 5, "dob", 1),
+  (DEFAULT, "Please select your country of origin.", 6, 6, "origin", 1);
 
 CREATE TABLE question_answer_submissions (
   submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,

@@ -5,7 +5,7 @@ const User = db.user;
 const Op = db.Sequelize.Op;
 
 exports.submit = async (req, res) => {
-    const { answers, dob, gender } = req.body;
+    const { answers, dob, gender, origin } = req.body;
 
     try {
         const insertedSubmission = await Submission.create({
@@ -28,6 +28,7 @@ exports.submit = async (req, res) => {
             )
 
             await User.update({
+                origin: origin,
                 gender: gender,
                 dob: new Date(dob),
                 ffq_complete: 1

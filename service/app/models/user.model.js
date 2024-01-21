@@ -42,6 +42,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         dob: {
           type: Sequelize.DATE
+        },
+        origin: {
+          type: Sequelize.STRING
         }
       }, 
       {

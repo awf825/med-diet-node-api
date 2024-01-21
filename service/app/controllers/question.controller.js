@@ -2,8 +2,10 @@ const db = require("../models");
 const Question = db.question;
 const Op = db.Sequelize.Op;
 
-exports.findAll = async (req, res) => {
-   Question.scope('withFieldTypeAndAnswerOptions').findAll()
+exports.findAllFFQ = async (req, res) => {
+   Question.scope('withFieldTypeAndAnswerOptions').findAll({
+    where: { form_id: 1 }
+   })
     .then(data => {
         res.send(data);
       })
