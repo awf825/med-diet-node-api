@@ -15,13 +15,6 @@ module.exports = (sequelize, Sequelize) => {
         },
         form_id: {
             type: Sequelize.INTEGER,
-        },
-        category_id: {
-            type: Sequelize.INTEGER,
-            references: {
-                model: 'question_category',
-                key: 'category_id'
-            }
         }
     },
         {

@@ -10,7 +10,27 @@ exports.findAll = (req, res) => {
     .catch(err => {
       res.status(500).send({
         message:
-          err.message || "Some error occurred while retrieving tutorials."
+          err.message || "Some error occurred while retrieving users."
       });
     });
 };
+
+exports.updateUserInfo = (req, res) => {
+  const { dob, gender, origin } = req.body;
+    User.update({
+        origin: origin,
+        gender: gender,
+        dob: new Date(dob),
+        ffq_complete: 1
+    }, {
+        where: {
+            user_id: req.user.user_id // again, hardcoding 1 for now
+        }
+    })
+    .then(res => {
+      res.status(200).send( { message: "User updated" })
+    })
+    .catch(err => {
+      res.status(500).send( { message: "User could not be updated" } )
+    })
+}

@@ -5,13 +5,12 @@ const User = db.user;
 const Op = db.Sequelize.Op;
 
 exports.submit = async (req, res) => {
-    const { answers, dob, gender, origin } = req.body;
+    const { answers, form_id } = req.body;
 
     try {
         const insertedSubmission = await Submission.create({
-            // user_id: req.user.user_id,
-            user_id: 1, // hardcoding for now as I expose these routes
-            form_id: answers[0].form_id,
+            user_id: req.user.user_id,
+            form_id: form_id,
             score: answers.reduce((acc, curr) => { return acc + curr.answer_score }, 0),
             completed_at: db.sequelize.fn('NOW')
         })
@@ -26,17 +25,6 @@ exports.submit = async (req, res) => {
                     }
                 })
             )
-
-            await User.update({
-                origin: origin,
-                gender: gender,
-                dob: new Date(dob),
-                ffq_complete: 1
-            }, {
-                where: {
-                    user_id: 1 // again, hardcoding 1 for now
-                }
-            })
 
             res.json({
                 submission: insertedSubmission,
