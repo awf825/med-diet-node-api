@@ -65,21 +65,6 @@ INSERT INTO forms (
   (DEFAULT, "FFQ"),
   (DEFAULT, "Weekly");
 
-CREATE TABLE question_categories (
-  category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  category_name VARCHAR(100) NOT NULL
-);
-
-INSERT INTO question_categories (
-  category_id, category_name
-) VALUES 
-  (DEFAULT, "FOOD"),
-  (DEFAULT, "FLOURISHING"),
-  (DEFAULT, "DRINK"),
-  (DEFAULT, "ACTIVITY"),
-  (DEFAULT, "FFQ"), /* ffq -> multiple radio */
-  (DEFAULT, "USER");
-
 CREATE TABLE question_field_types (
   field_type_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   field_name VARCHAR(50) NOT NULL
@@ -100,7 +85,9 @@ INSERT INTO question_field_types (
   (DEFAULT, "FFQ-STANDARD"), /* 1/2 cup, 1 cup etc*/
   (DEFAULT, "FFQ-METRIC"), /* 1 liter, 2 liter, etc */
   (DEFAULT, "FFQ-UNITS"), /* 1 unit of alcohol, 2 units of alcohol, etc */
-  (DEFAULT, "GENDER");
+  (DEFAULT, "GENDER"),
+  (DEFAULT, "WKLY-QTY"), /* NONE, 1-2 servings, 3-4 servings etc*/
+  (DEFAULT, "WKLY-FREQ"); /* NOT ONCE, ONE DAY, 2-3 DAYS, 4 OR MORE DAYS */
 
 CREATE TABLE question_answer_options (
   option_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -154,30 +141,38 @@ INSERT INTO question_answer_options (
   (DEFAULT, 13, "Female", 2),
   (DEFAULT, 13, "Transgender", 3),
   (DEFAULT, 13, "Binary/Non-conforming", 4),
-  (DEFAULT, 13, "Prefer not to say", 5);        /* END GENDER */
+  (DEFAULT, 13, "Prefer not to say", 5),        /* END GENDER */
+  (DEFAULT, 14, "None", 1),                     /* BEGIN WKLY-QTY */
+  (DEFAULT, 14, "1-2 servings", 2), 
+  (DEFAULT, 14, "3-4 servings", 3), 
+  (DEFAULT, 14, "5 or more servings", 4),       /* END WKLY-QTY */
+  (DEFAULT, 15, "Never", 1),                    /* BEGIN WKLY-FREQ */
+  (DEFAULT, 15, "1 day", 2), 
+  (DEFAULT, 15, "2-3 days", 3), 
+  (DEFAULT, 15, "4 or more days", 4);        /* BEGIN WKLY-FREQ */
 
 CREATE TABLE questions (
   question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   question_text VARCHAR(540) NOT NULL UNIQUE,
-  category_id INT NOT NULL,
   field_type_id INT NOT NULL,
   field_code VARCHAR(15) NOT NULL,
   form_id INT NOT NULL,
   UNIQUE INDEX `idx_question_text` (`question_text`),
-  FOREIGN KEY (category_id) REFERENCES question_categories (category_id),
   FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id),
   FOREIGN KEY (form_id) REFERENCES forms (form_id)
 );
 
 INSERT INTO questions (
-  question_id, question_text, category_id, field_type_id, field_code, form_id
+  question_id, question_text, field_type_id, field_code, form_id
 ) VALUES 
   (DEFAULT, "How often did you eat baked ham or ham steak?", 4, 7, "ham", 1),
   (DEFAULT, "How often were the soups you ate cream soups (including chowders)?", 4, 8, "creamsoup", 1),
   (DEFAULT, "How often did you drink beer IN THE SUMMER?", 4, 9, "beer", 1),
-  (DEFAULT, "Please select your gender.", 6, 13, "gender", 1),
-  (DEFAULT, "PLease select your date of birth.", 6, 5, "dob", 1),
-  (DEFAULT, "Please select your country of origin.", 6, 6, "origin", 1);
+  (DEFAULT, "Please select your gender.", 13, "gender", 1),
+  (DEFAULT, "PLease select your date of birth.", 5, "dob", 1),
+  (DEFAULT, "Please select your country of origin.", 6, "origin", 1),
+  (DEFAULT, "How many servings of poultry have you eaten this week?", 14, "poultry", 2),
+  (DEFAULT, "How many days this week have you exercised for 20 minutes or more?", 15, "origin", 2);
 
 CREATE TABLE question_answer_submissions (
   submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
