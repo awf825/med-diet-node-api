@@ -10,10 +10,10 @@ module.exports = (sequelize, Sequelize) => {
         // },
         question_id: {
             type: Sequelize.INTEGER,
-            references: {
-                model: 'question',
-                key: 'question_id'
-            }
+            // references: {
+            //     model: 'question',
+            //     key: 'question_id'
+            // }
         },
         question_answer_submission_id: {
             type: Sequelize.INTEGER,
@@ -23,7 +23,8 @@ module.exports = (sequelize, Sequelize) => {
             }
         },
         answer_score: {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
+            allowNull: true
         }
     },
         {
