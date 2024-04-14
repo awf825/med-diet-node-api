@@ -7,6 +7,9 @@ module.exports = (sequelize, Sequelize) => {
         question_text: {
             type: Sequelize.STRING
         },
+        category_id: {
+            type: Sequelize.INTEGER
+        },
         field_type_id: {
             type: Sequelize.INTEGER,
         },
