@@ -30,5 +30,12 @@ module.exports = (sequelize, Sequelize) => {
         // });
     }
 
+    // query for scores grouped by category:
+    // select count(qa.answer_score), qc.category_display_name from question_categories qc 
+    // JOIN questions q ON q.category_id = qc.question_category_id 
+    // JOIN question_answers qa ON qa.question_id = q.question_id 
+    // where qc.question_category_id != 9 
+    // group by qc.question_category_id;
+
     return QuestionCategory;
 };
