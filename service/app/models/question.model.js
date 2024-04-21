@@ -32,6 +32,23 @@ module.exports = (sequelize, Sequelize) => {
             foreignKey: "field_type_id"
         })
 
+        Question.belongsTo(models.question_category, {
+            as: "question_category",
+            sourceKey: "category_id",
+            foreignKey: "question_category_id"
+        });
+
+        // Question.hasMany(models.question_answers, {
+        //     as: "question_answers",
+        //     foreignKey: "question_id"
+        // })
+
+        // Question.hasOne(models.question_field_type, {
+        //     as: "question_field_type",
+        //     sourceKey: "field_type_id",
+        //     foreignKey: "field_type_id"
+        // })
+
         Question.addScope('withFieldTypeAndAnswerOptions', {
             include: [
                 { 
@@ -49,7 +66,5 @@ module.exports = (sequelize, Sequelize) => {
         });
     }
 
-
-    
     return Question;
 };

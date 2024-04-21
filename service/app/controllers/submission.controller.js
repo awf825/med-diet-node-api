@@ -3,6 +3,7 @@ const Submission = db.question_answer_submission;
 const Answer = db.question_answers;
 const User = db.user;
 const Op = db.Sequelize.Op;
+const sequelize = db.sequelize;
 
 exports.submit = async (req, res) => {
     const { answers, form_id } = req.body;
@@ -42,11 +43,6 @@ exports.submit = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-    // Submission.scope('withAnswers').findAll({
-    //     where: {
-    //         user_id: req.user.user_id
-    //     }
-    // })
     Submission.scope('withAnswers').findAll()
     .then(data => {
         res.send(data);
@@ -59,3 +55,18 @@ exports.getAll = async (req, res) => {
         });
     });
 }
+
+exports.getAnswersByCategory = async (req, res) => {
+    try {
+        const result = await sequelize.query(
+            'select SUM(qa.answer_score) as score, qc.category_display_name from question_answer_submissions qas join question_answers qa ON qa.question_answer_submission_id = qas.submission_id JOIN questions q ON q.question_id = qa.question_id join question_categories qc on qc.question_category_id = q.category_id where qc.question_category_id != 9 and qas.user_id = 2 group by qc.question_category_id', 
+            {type: sequelize.QueryTypes.SELECT}
+        )
+        res.send(result);
+    } catch (err) {
+        res.status(500).send({
+          message:
+            err.message || "Some error occurred while retrieving questions"
+        });
+    }
+};

@@ -19,15 +19,10 @@ module.exports = (sequelize, Sequelize) => {
     );
 
     QuestionCategory.associate = (models) => {
-        QuestionCategory.belongsTo(models.question, {
-            as: "question",
+        QuestionCategory.hasMany(models.question, {
+            as: "questions",
             foreignKey: "category_id"
         });
-
-        // FieldType.hasMany(models.question_answer_options, { 
-        //     as: "question_answer_options",
-        //     foreignKey: "field_type_id"
-        // });
     }
 
     // query for scores grouped by category:

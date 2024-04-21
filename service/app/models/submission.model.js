@@ -44,9 +44,8 @@ module.exports = (sequelize, Sequelize) => {
                     as: 'question_answers'
                 }
             ]
-        });
+        }); 
     }
-
 
     return Submission;
 };

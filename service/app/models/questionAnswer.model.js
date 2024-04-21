@@ -1,26 +1,17 @@
 'use strict'
 module.exports = (sequelize, Sequelize) => {
     const Answer = sequelize.define("question_answers", {
-        // answer_id: {
-        //     field: 'answer_id',
-        //     type: Sequelize.INTEGER,
-        //     primaryKey: true,
-        //     autoIncrement: true,
-        //     allowNull: false
-        // },
+        answer_id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false
+        },
         question_id: {
             type: Sequelize.INTEGER,
-            // references: {
-            //     model: 'question',
-            //     key: 'question_id'
-            // }
         },
         question_answer_submission_id: {
             type: Sequelize.INTEGER,
-            references: {
-                model: 'question_answer_submission',
-                key: 'submission_id'
-            }
         },
         answer_score: {
             type: Sequelize.INTEGER,
@@ -33,9 +24,18 @@ module.exports = (sequelize, Sequelize) => {
         }
     );
 
-    Answer.removeAttribute('id');
+    Answer.associate = function (models) {
+        Answer.hasOne(models.question, {
+            as: "question",
+            sourceKey: "question_id",
+            foreignKey: "question_id"
+        });
 
-    // Answer.associate = function (models) {}
+        Answer.hasOne(models.question_category, {
+            as: "question_category",
+            through: "question"
+        })
+    }
     
     return Answer;
 };

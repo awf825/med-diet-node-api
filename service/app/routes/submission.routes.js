@@ -10,5 +10,7 @@ module.exports = app => {
   // router.get("/", middleware.authenticateWebToken, submissions.getAll);
   router.get("/", submissions.getAll);
 
+  router.get("/getAnswersByCategory", middleware.authenticateWebToken, submissions.getAnswersByCategory);
+
   app.use('/api/submissions', router);
 };
