@@ -10,7 +10,8 @@ module.exports = app => {
   // router.get("/", middleware.authenticateWebToken, submissions.getAll);
   router.get("/", submissions.getAll);
 
-  router.get("/getAnswersByCategory", middleware.authenticateWebToken, submissions.getAnswersByCategory);
+  // router.get("/getAnswersByCategory", middleware.authenticateWebToken, submissions.getAnswersByCategory);
+  router.get("/getAnswersByCategory", submissions.getAnswersByCategory);
 
   app.use('/api/submissions', router);
 };
