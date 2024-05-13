@@ -14,6 +14,7 @@ exports.findAllFFQ = async (req, res) => {
         res.send(data);
       })
       .catch(err => {
+        console.log('err: ', err)
         res.status(500).send({
           message:
             err.message || "Some error occurred while retrieving questions"
@@ -26,7 +27,6 @@ exports.findAllFFQ = async (req, res) => {
 */
 
 exports.findAllWeekly = async (req, res) => {
-  console.log('req: ', req)
   Question.scope('withFieldTypeAndAnswerOptions').findAll({
    where: { form_id: 2 }
   })
@@ -34,6 +34,7 @@ exports.findAllWeekly = async (req, res) => {
        res.send(data);
      })
      .catch(err => {
+       console.log('err: ', err)
        res.status(500).send({
          message:
            err.message || "Some error occurred while retrieving questions"

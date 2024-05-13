@@ -18,6 +18,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         form_id: {
             type: Sequelize.INTEGER,
+        },
+        positive_impact: {
+            type: Sequelize.INTEGER
         }
     },
         {
@@ -32,22 +35,11 @@ module.exports = (sequelize, Sequelize) => {
             foreignKey: "field_type_id"
         })
 
-        Question.belongsTo(models.question_category, {
-            as: "question_category",
-            sourceKey: "category_id",
-            foreignKey: "question_category_id"
-        });
-
-        // Question.hasMany(models.question_answers, {
-        //     as: "question_answers",
-        //     foreignKey: "question_id"
-        // })
-
-        // Question.hasOne(models.question_field_type, {
-        //     as: "question_field_type",
-        //     sourceKey: "field_type_id",
-        //     foreignKey: "field_type_id"
-        // })
+        // Question.belongsTo(models.question_category, {
+        //     as: "question_category",
+        //     sourceKey: "category_id",
+        //     foreignKey: "question_category_id"
+        // });
 
         Question.addScope('withFieldTypeAndAnswerOptions', {
             include: [
