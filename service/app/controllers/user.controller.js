@@ -24,7 +24,7 @@ exports.updateUserInfo = (req, res) => {
         ffq_complete: 1
     }, {
         where: {
-            user_id: req.user.user_id // again, hardcoding 1 for now
+            user_id: req.user.user_id
         }
     })
     .then(res => {

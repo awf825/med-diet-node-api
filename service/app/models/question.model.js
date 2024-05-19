@@ -18,9 +18,6 @@ module.exports = (sequelize, Sequelize) => {
         },
         form_id: {
             type: Sequelize.INTEGER,
-        },
-        positive_impact: {
-            type: Sequelize.INTEGER
         }
     },
         {
@@ -34,12 +31,6 @@ module.exports = (sequelize, Sequelize) => {
             sourceKey: "field_type_id",
             foreignKey: "field_type_id"
         })
-
-        // Question.belongsTo(models.question_category, {
-        //     as: "question_category",
-        //     sourceKey: "category_id",
-        //     foreignKey: "question_category_id"
-        // });
 
         Question.addScope('withFieldTypeAndAnswerOptions', {
             include: [

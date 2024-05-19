@@ -59,11 +59,20 @@ exports.getAll = async (req, res) => {
 exports.getAnswersByCategory = async (req, res) => {
     try {
         const result = await sequelize.query(
-            'select count(qa.answer_score) as answer_number, SUM(qa.answer_score) as score, qc.category_display_name, qc.question_category_id from question_answer_submissions qas join question_answers qa ON qa.question_answer_submission_id = qas.submission_id JOIN questions q ON q.question_id = qa.question_id join question_categories qc on qc.question_category_id = q.category_id where qc.question_category_id != 9 and qas.user_id = 2 group by qc.question_category_id', 
-            {type: sequelize.QueryTypes.SELECT}
+            'select count(qa.answer_score) as answer_number, SUM(qa.answer_score) as score, qc.category_display_name, qc.question_category_id from question_answer_submissions qas join question_answers qa ON qa.question_answer_submission_id = qas.submission_id JOIN questions q ON q.question_id = qa.question_id join question_categories qc on qc.question_category_id = q.category_id where qc.question_category_id != 9 and qas.user_id = :user_id group by qc.question_category_id', 
+            { 
+                replacements: {
+                    // user_id: req.user.user_id
+                    user_id: 3
+                }
+            },
+            {
+                type: sequelize.QueryTypes.SELECT,
+            }
         )
         res.send(result);
     } catch (err) {
+        console.log('err: ', err)
         res.status(500).send({
           message:
             err.message || "Some error occurred while retrieving questions"

@@ -13,7 +13,7 @@ module.exports = (sequelize, Sequelize) => {
         option_text: {
             type: Sequelize.STRING
         },
-        ordering: {
+        answer_value: {
             type: Sequelize.INTEGER
         }
     },
