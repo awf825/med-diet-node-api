@@ -12,6 +12,9 @@ module.exports = (sequelize, Sequelize) => {
         category_display_name: {
             type: Sequelize.STRING
         },
+        display_hex_code: {
+            type: Sequelize.STRING
+        }
     },
         {
             timestamps: false

@@ -10,20 +10,6 @@ INSERT INTO user_auth_methods (
   (DEFAULT, "GOOGLE"),
   (DEFAULT, "APPLE");
 
-CREATE TABLE genders (
-  gender_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  gender_name VARCHAR(100) NOT NULL
-);
-
-INSERT INTO genders (
-  gender_id, gender_name
-) VALUES 
-  (DEFAULT, "MALE"),
-  (DEFAULT, "FEMALE"),
-  (DEFAULT, "TRANSGENDER"),
-  (DEFAULT, "NON-BINARY/NON-CONFORMING"),
-  (DEFAULT, "PREFER NOT TO SAY");
-
 CREATE TABLE users (
   user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   email VARCHAR(80) DEFAULT NULL,
@@ -44,7 +30,6 @@ CREATE TABLE users (
   UNIQUE INDEX `idx_email` (`email`),
   UNIQUE INDEX `idx_username` (`username`),
   FOREIGN KEY (auth_method_id) REFERENCES user_auth_methods (auth_method_id),
-  FOREIGN KEY (gender_id) REFERENCES genders (gender_id)
 );
 
 INSERT INTO users (
@@ -62,8 +47,8 @@ CREATE TABLE forms (
 INSERT INTO forms (
   form_id, form_name
 ) VALUES 
-  (DEFAULT, "FFQ"),
-  (DEFAULT, "Weekly");
+  (DEFAULT, "FFQ-56"),
+  (DEFAULT, "D-25");
 
 CREATE TABLE question_field_types (
   field_type_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -87,22 +72,18 @@ INSERT INTO question_field_types (
   (DEFAULT, "FFQ-UNITS"), /* 1 unit of alcohol, 2 units of alcohol, etc */
   (DEFAULT, "GENDER"),
   (DEFAULT, "WKLY-QTY"), /* NONE, 1-2 servings, 3-4 servings etc*/
-  (DEFAULT, "WKLY-FREQ"); /* NOT ONCE, ONE DAY, 2-3 DAYS, 4 OR MORE DAYS */
+  (DEFAULT, "WKLY-FREQ"), /* NOT ONCE, ONE DAY, 2-3 DAYS, 4 OR MORE DAYS */
+  (DEFAULT, "WKLY-BIN-POSITIVE");
+  (DEFAULT, "WKLY-BIN-NEGATIVE");
 
 CREATE TABLE question_answer_options (
   option_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   field_type_id INT NOT NULL,
   option_text VARCHAR(100) NOT NULL,
-  ordering INT NOT NULL, 
+  answer_value INT NOT NULL, 
+  description VARCHAR(300) DEFAULT NULL,
   FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id)
 );
-
-/*
-  In development, I have "ordering" ultimately being recorded as the value the from
-  takes in. This is probably better suited to its own column
-
-  If ordering is "-1", this is not a selection, and will be validated as such by formik
-*/
 
 INSERT INTO question_answer_options (
   option_id, field_type_id, option_text, ordering
@@ -111,17 +92,16 @@ INSERT INTO question_answer_options (
   (DEFAULT, 6, "United States", 1),
   (DEFAULT, 6, "Spain", 2),
   (DEFAULT, 6, "Austrailia", 3),                 /* END SELECT-ORIGIN */
-  (DEFAULT, 7, "NEVER", 1),                      /* BEGIN FFQ-FREQ-A */
-  (DEFAULT, 7, "1-6 times per year", 2),
-  (DEFAULT, 7, "7-11 times per year", 3),
-  (DEFAULT, 7, "Once per month", 4),
-  (DEFAULT, 7, "2-3 times per month", 5),
-  (DEFAULT, 7, "1 time per week", 6),
-  (DEFAULT, 7, "Twice per week", 7),
-  (DEFAULT, 7, "3-4 times per week", 8),
-  (DEFAULT, 7, "5-6 times per week", 9),
-  (DEFAULT, 7, "1 time per day", 10),
-  (DEFAULT, 7, "2 or more times per day", 11),  /* END FFQ-FREQ-A */
+  (DEFAULT, 7, "Never, or less than once a month", 1),                      /* BEGIN FFQ-FREQ-A */
+  (DEFAULT, 7, "1-3 times a month", 2),
+  (DEFAULT, 7, "Once per month", 3),
+  (DEFAULT, 7, "Once per week", 4),
+  (DEFAULT, 7, "2-4 times a week", 5),
+  (DEFAULT, 7, "5-6 times a week", 6),
+  (DEFAULT, 7, "Once per day", 7),
+  (DEFAULT, 7, "2-3 times per day", 8),
+  (DEFAULT, 7, "4-5 times per day", 9),
+  (DEFAULT, 7, "6 or more times a day", 10),           /* END FFQ-FREQ-A */
   (DEFAULT, 8, "Almost never or never", 1),       /* BEGIN FFQ-FREQ-B */
   (DEFAULT, 8, "About 1/4 of the time", 2),
   (DEFAULT, 8, "About 1/2 of the time", 3),
@@ -149,30 +129,133 @@ INSERT INTO question_answer_options (
   (DEFAULT, 15, "Never", 1),                    /* BEGIN WKLY-FREQ */
   (DEFAULT, 15, "1 day", 2), 
   (DEFAULT, 15, "2-3 days", 3), 
-  (DEFAULT, 15, "4 or more days", 4);        /* BEGIN WKLY-FREQ */
+  (DEFAULT, 15, "4 or more days", 4),        /* END WKLY-FREQ */
+  (DEFAULT, 16, "Yes", 7, "YES answered to question of POSITIVE impact gives POSITIVE points"),                   /* BEGIN WKLY-BTN-+ */
+  (DEFAULT, 16, "No", 0, "NO answered to question of POSITIVE impact is neutral; gives 0 points");
+  (DEFAULT, 17, "Yes", -7, "YES answered to question of NEGATIVE impact gives NEGATIVE points"),                 /* BEGIN WKLY-BTN-- */
+  (DEFAULT, 17, "No", 0, "NO answered to question of NEGATIVE impact is neutral, gives 0 points");
+
+CREATE TABLE question_categories (
+  question_category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  category_name VARCHAR(540) NOT NULL UNIQUE,
+  category_display_name VARCHAR(540) NOT NULL UNIQUE,
+  display_hex_code VARCHAR(10) DEFAULT NULL,
+  UNIQUE INDEX `idx_category_name` (`category_name`)
+);
+
+INSERT INTO question_categories (
+  question_category_id, category_name, category_display_name
+) VALUES 
+  (DEFAULT, "dairy", "Dairy Foods", "#0821c0"),
+  (DEFAULT, "fruits", "Fruits", "#f60b49"),
+  (DEFAULT, "vegetables", "Vegetables", "#8ea315"),
+  (DEFAULT, "meatx", "Meat, Fish & Eggs", "#f3c41f"),
+  (DEFAULT, "starchx", "Breads, Cereal, Starches", "#84683c"),
+  (DEFAULT, "bev", "Beverages", "#3ab2f6"),
+  (DEFAULT, "sweet", "Sweets, Baked Goods, etc", "#502a5a"),
+  (DEFAULT, "culi", "Culinary Ingredients", "#45bb49"),
+  (DEFAULT, "profile", "User Info");
 
 CREATE TABLE questions (
   question_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   question_text VARCHAR(540) NOT NULL UNIQUE,
-  field_type_id INT NOT NULL,
+  category_id int not null,
+  field_type_id INT,
   field_code VARCHAR(15) NOT NULL,
   form_id INT NOT NULL,
   UNIQUE INDEX `idx_question_text` (`question_text`),
   FOREIGN KEY (field_type_id) REFERENCES question_field_types (field_type_id),
+  FOREIGN KEY (category_id) REFERENCES question_categories (question_category_id),
   FOREIGN KEY (form_id) REFERENCES forms (form_id)
 );
 
 INSERT INTO questions (
-  question_id, question_text, field_type_id, field_code, form_id
+  question_id, question_text, category_id, field_code, field_type_id, form_id, positive_impact
 ) VALUES 
-  (DEFAULT, "How often did you eat baked ham or ham steak?", 4, 7, "ham", 1),
-  (DEFAULT, "How often were the soups you ate cream soups (including chowders)?", 4, 8, "creamsoup", 1),
-  (DEFAULT, "How often did you drink beer IN THE SUMMER?", 4, 9, "beer", 1),
-  (DEFAULT, "Please select your gender.", 13, "gender", 1),
-  (DEFAULT, "PLease select your date of birth.", 5, "dob", 1),
-  (DEFAULT, "Please select your country of origin.", 6, "origin", 1),
-  (DEFAULT, "How many servings of poultry have you eaten this week?", 14, "poultry", 2),
-  (DEFAULT, "How many days this week have you exercised for 20 minutes or more?", 15, "origin", 2);
+    (DEFAULT, "How often did you drink a glass (8 oz) of skim or low fat milk?", 1, "skim-milk", 7, 1, 1),
+    (DEFAULT, "How often did you drink a glass (8 oz) of whole milk?", 1, "whole-milk", 7, 1, 0),
+    (DEFAULT, "How often did you eat a container (6 oz) of yoghurt or fermented milk?", 1, "yogurt", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 cup of ice cream?", 1, "ice-cream", 7, 1, 0),
+    (DEFAULT, "How often did you eat half a cup of fresh cheese? (NEED EXAMPLES)", 1, "fresh-cheese", 7, 1, 0),
+    (DEFAULT, "How often did you eat 2 slices of hard cheese? (NEED EXAMPLES)", 1, "hard-cheese", 7, 1, 0),
+    (DEFAULT, "How often did you eat a whole banana?", 2, "banana", 7, 1, 1),
+    (DEFAULT, "How often did you eat an orange, apple, pear or peach?", 2, "hand-fruits", 7, 1, 1),
+    (DEFAULT, "How often did you eat half a cup of strawberries, blueberries, or grapes?", 2, "berry", 7, 1, 1),
+    (DEFAULT, "How often did you eat half a cup of pineapple, cantaloupe, avocado, tangerine, apricot, or plum?", 2, "other-fruit", 7, 1, 1),
+    (DEFAULT, "How often did you drink a glass of (fresh) fruit juice?", 2, "juice", 7, 1, 1),
+    (DEFAULT, "How often did you eat (half of a tomato)?", 3, "tomato", 7, 1, 1),
+    (DEFAULT, "How often did you eat 1/2 cup of cooked string beans, broccoli, carrots, cabbage, cauliflower, or coleslaw?", 3, "beans", 7, 1, 1),
+    (DEFAULT, "How often did you eat 1/2 cup of (uncooked) spinach, lettuce, or leafy greens?", 3, "greens", 7, 1, 1),
+    (DEFAULT, "How often did you eat an ear of corn?", 3, "corn", 7, 1, 1),
+    (DEFAULT, "How often did you eat 1/2 cup of (cooked) squash, eggplant, or zucchini?", 3, "squash", 7, 1, 1),
+    (DEFAULT, "How often did you eat 1/2 cup of (cooked) beans, peas, lentils, or chickpeas?", 3, "lentil", 7, 1, 1),
+    (DEFAULT, "How often did you eat a 4 oz piece of chicken or turkey?", 4, "chicken", 7, 1, 1),
+    (DEFAULT, "How often did you eat a (piece of|unit|one) hamburger, hot dog, or sausage?", 4, "beef", 7, 1, 0),
+    (DEFAULT, "How often did you eat 2 slices of bacon?", 4, "bacon", 7, 1, 0),
+    (DEFAULT, "How often did you eat a 4 oz piece of pork, lamb, or beef steak?", 4, "red", 7, 1, 0),
+    (DEFAULT, "How often did you eat two slices of cold cuts?", 4, "cold-cut", 7, 1, 0),
+    (DEFAULT, "How often did you eat a (4 oz) can of tuna fish?", 4, "tuna", 7, 1, 1),
+    (DEFAULT, "How often did you eat a 4 oz fillet of cod, tilapia, pollock, halibut, catfish or flounder?", 4, "fish", 7, 1, 1),
+    (DEFAULT, "How often did you eat a 4 oz fillet of tuna steak, mackerel, salmon, sardine, or swordfish?", 4, "bluefish", 7, 1, 1),
+    (DEFAULT, "How often did you eat a single (hard boiled) egg?", 4, "egg", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 cup of cold breakfast cereal?", 5, "cereal", 7, 1, 1),
+    (DEFAULT, "How often did you eat a single slice of white bread?", 5, "white", 7, 1, 0),
+    (DEFAULT, "How often did you eat a single slice of dark or whole grain bread?", 5, "wheat", 7, 1, 1),
+    (DEFAULT, "How often did you eat a serving of 6 crackers (saltines, ritz, etc)?", 5, "cracker", 7, 1, 0),
+    (DEFAULT, "How often did you eat 2 slices of pizza?", 5, "pizza", 7, 1, 0),
+    (DEFAULT, "How often did you eat a tortilla (burrito, quesadila)?", 5, "tortilla", 7, 1, 0),
+    (DEFAULT, "How often did you eat one small bag of potato chips or corn chips?", 5, "chips", 7, 1, 0),
+    (DEFAULT, "How often did you eat (a serving) of french fries?", 5, "fries", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1/2 cup of baked, boiled, or (mashed) potatoes?", 5, "potato", 7, 1, 0),
+    (DEFAULT, "How often did you eat a cup of white rice?", 5, "rice", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 cup of pasta?", 5, "pasta", 7, 1, 0),
+    (DEFAULT, "How often did you drink 8 oz of water?", 6, "water", 7, 1, 1),
+    (DEFAULT, "How often did you drink (8 oz) or coffee or (black) tea?", 6, "coffee", 7, 1, 1),
+    (DEFAULT, "How often did you drink a can or bottle of a carbonated beverage (EXAMPLES)", 6, "carbo", 7, 1, 0),
+    (DEFAULT, "How often did you drink a can or bottle of a low-calorie beverage (EXAMPLES)", 6, "low-cal", 7, 1, 1),
+    (DEFAULT, "How often did you drink a can or bottle of beer (EXAMPLES)", 6, "beer", 7, 1, 0),
+    (DEFAULT, "How often did you drink a glass of wine?", 6, "wine", 7, 1, 1),
+    (DEFAULT, "How often did you drink 1.5 oz of liquor?", 6, "liquor", 7, 1, 0),
+    (DEFAULT, "How often did you eat a bar of chocolate?", 7, "choc", 7, 1, 0),
+    (DEFAULT, "How often did you eat a doughnut, bagel, muffin, bread roll, pancake, waffle, cookie, a slice of cake or pie?", 7, "baked", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 tablespoon of peanut butter?", 7, "pb", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 piece of snack bars like Kind, Kashi, Clif, or Quest?", 7, "energy", 7, 1, 0),
+    (DEFAULT, "How often did you eat 1 small bag of doritos or pretzels?", 7, "snack", 7, 1, 0),
+    (DEFAULT, "How often did you eat (1 serving) of peanuts, walnuts, or other nuts?", 7, "nuts", 7, 1, 1),
+    (DEFAULT, "How often did you eat (1 package of candies)?", 7, "candy", 7, 1, 0),
+    (DEFAULT, "How often did you use 1 tablespoon of olive oil for cooking or dressing?", 8, "olive-oil", 7, 1, 1),
+    (DEFAULT, "How often did you use 1 tablespoon of vegetable oil for cooking or dressing?", 8, "veg-oil", 7, 1, 1),
+    (DEFAULT, "How often did you use 1 tablespoon of mayonnaise, italian or ranch salad dressing?", 8, "mayo", 7, 1, 0),
+    (DEFAULT, "How often did you use 1 tablespoon of butter or margarine for cooking or added to food or bread?", 8, "butter", 7, 1, 0),
+    (DEFAULT, "How often did you add salt to food at the table?", 8, "salt", 7, 1, 0),
+    (DEFAULT, "Please select your gender.", 9, "gender", 13, 1, null),
+    (DEFAULT, "Please select your date of birth.", 9, "dob", null, 1, null),
+    (DEFAULT, "Please select your country of origin.", 9, "origin", 6, 1, null),
+    (DEFAULT, "Have you eaten at least 5 servings of fruit and vegetables at day? (1 serving = 103 g * 5= 515)", 3, "fv-5", 16, 2, 1),
+    (DEFAULT, "At least 3 servings of those F&V you ate at day were vegetables? (1 serving 89.2*3=268)", 3, "v-3", 16, 2, 1),
+    (DEFAULT, "Have you eaten less than 1/2 cup of patatoes at day?", 5, "pot", 16, 2, 1),
+    (DEFAULT, "Have you eaten 5 or less servings of cereals at day? (1 serving = 34.5 g of bread or 75.3 g of pasta/rice, 1 serving of cereals= 55g)", 5, "grn", 16, 2, 1),
+    (DEFAULT, "At least half of the servings of cereals you ate were whole grain?", 5, "wgrn", 16, 2, 1),
+    (DEFAULT, "Have you eaten 4 serving of legumes per week? (1 serving = 82.5 per day, 82.4 times 4= 330 per week= 47 g per day)", 3, "lgm", 16, 2, 1),
+    (DEFAULT, "Have you eaten 3 servings of nuts per week?  (1 serving = 30 g, 30 times 3 = 90 gramos per week, 13 g per day)", 7, "nut", 16, 2, 1),
+    (DEFAULT, "Have you eaten 3 servings of fish and seafood per week? (1 serving = 132 g, 132 times 3= 396 per week, 57 g per day)", 4, "fish", 16, 2, 1),
+    (DEFAULT, "Out of the servings of fish, were they mostly oily fish?", 4, "ofish", 16, 2, 1),
+    (DEFAULT, "Have you eaten 4 eggs per week? (1 egg=50 g, 50 times 4 = 200 per week, 29 g per day)", 4, "egg", 16, 2, 0),
+    (DEFAULT, "Have you eaten less than 2 servings of cheese, yogurt or fermented milk? (1 serving = 109 g of fresh cheese, 56 g hard cheese, 170 g of yogurt, 1 serving of dairy = 112 g, 112 times 2 = 224)", 1, "chs", 16, 2, 0),
+    (DEFAULT, "Have you eaten < of 3 serving of meat per week? (1 serving = 113.2 g, 113,2 times 3 = 340 per week, 49 per day)", 4, "meat", 16, 2, 0),
+    (DEFAULT, "Of those servings, were at least half of them white meat from poultry?", 4, "plt", 16, 2, 1),
+    (DEFAULT, "Have you eaten 1 serving of processed meat per week? (1 serving=42.8 g per week, 6 g per day)", 4, "prmeat", 16, 2, 0),
+    (DEFAULT, "Have you used olive oil for cooking and food dressing?", 8, "oo", 16, 2, 1),
+    (DEFAULT, "Have you eaten < of 1 serving of sweets, chocolates, cookies, industrial bakery, and snacks per week? (1 serving = 51,2 per week, 7 g per day)", 7, "sgr", 16, 2, 0),
+    (DEFAULT, "Have you added salt at table?", 8, "salt", 16, 2, 0),
+    (DEFAULT, "Did you drink 2 liter of water (8 glasses) per day? (8*237g= 1896 g (2litrs))", 6, "water", 16, 2, 1),
+    (DEFAULT, "Did you drink 1 glass of low-fat milk per day? (245 ml)", 1, "mlk", 16, 2, 1),
+    (DEFAULT, "Did you drink 1 cup of coffee or tea per day? (237 mL)", 6, "coff", 16, 2, 1),
+    (DEFAULT, "Did you drink 1 glass of whole-fat milk per day? (245 ml)", 1, "wmlk", 16, 2, 0),
+    (DEFAULT, "Did you drink 1 glass of fruit juice per day? (248 ml)", 6, "jui", 16, 2, 0),
+    (DEFAULT, "Did you drink 1 can of low calorie beverages per day? (370 mL)", 6, "lcal", 16, 2, 0),
+    (DEFAULT, "Did you drink 1 can of carbonated beverages per day? (370 mL)", 6, "carb", 16, 2, 0),
+    (DEFAULT, "Did you drink more than 1 alcoholic drink (if women) or more than 2 (if men) per day? (1 drink is 147 ml of wine, 356 ml of beer or 42 ml of liquors)", 6, "alc", 16, 2, 0);
 
 CREATE TABLE question_answer_submissions (
   submission_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
