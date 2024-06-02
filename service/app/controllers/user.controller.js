@@ -27,10 +27,11 @@ exports.updateUserInfo = (req, res) => {
             user_id: req.user.user_id
         }
     })
-    .then(res => {
-      res.status(200).send( { message: "User updated" })
+    .then(resp => {
+      res.send( { message: "User updated" })
     })
     .catch(err => {
+      console.log('err: ', err)
       res.status(500).send( { message: "User could not be updated" } )
     })
 }

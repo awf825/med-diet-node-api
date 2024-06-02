@@ -11,7 +11,8 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 var corsOptions = {
-  origin: "http://localhost:8081"
+  // origin: "http://localhost:8081"
+  origin: "http://10.0.2.2:8081"
 };
 app.use(cors(corsOptions));
 app.use(express.json({limit: '50mb'}));
