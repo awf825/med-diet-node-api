@@ -13,5 +13,9 @@ module.exports = app => {
   // router.get("/getAnswersByCategory", middleware.authenticateWebToken, submissions.getAnswersByCategory);
   router.get("/getAnswersByCategory", submissions.getAnswersByCategory);
 
+  /* GET TIME OF COMPLETION AND SCORE OF LATEST SUBMISSION */
+  // router.get("/getLatestSubmissionAndStreaks", middleware.authenticateWebToken, submissions.getLatestSubmissionAndStreaks);
+  router.get("/getLatestSubmissionAndStreaks", submissions.getLatestSubmissionAndStreaks);
+
   app.use('/api/submissions', router);
 };

@@ -63,7 +63,7 @@ exports.getAnswersByCategory = async (req, res) => {
             { 
                 replacements: {
                     // user_id: req.user.user_id
-                    user_id: 3
+                    user_id: 1 
                 }
             }
         )
@@ -77,3 +77,62 @@ exports.getAnswersByCategory = async (req, res) => {
         });
     }
 };
+
+exports.getLatestSubmissionAndStreaks = async (req, res) => {
+    const longestConsecutive = (nums) => {
+        const numSet = new Set(nums);
+        let longestStreak = 0;
+        for (let num of numSet) {
+          if (!numSet.has(num - 1)) {
+            let currentNum = num;
+            let currentStreak = 1;
+            while (numSet.has(currentNum + 1)) {
+              currentNum += 1;
+              currentStreak += 1;
+            }
+            longestStreak = Math.max(longestStreak, currentStreak);
+          }
+        }
+        return longestStreak;
+      };
+
+    try {
+        // let currentStreak = 0;
+        let longestStreak = 0;
+        let latest;
+        const submissions = await Submission.findAll({
+            where: {
+                user_id: 1
+            },
+            order: [ [ 'completed_at', 'DESC' ]]
+        })
+
+        latest = submissions[0]
+
+        const completionsDayOfEpoch = submissions.reverse().map(s => {
+            return Math.floor(+new Date(s.completed_at) / 86400000)
+        })
+
+        const completionsDayOfEpochSet = new Set(completionsDayOfEpoch)
+
+        for (let day of completionsDayOfEpochSet) {
+            if (!completionsDayOfEpochSet.has(day - 1)) {
+                let currentDay = day;
+                let currentStreak = 1;
+                while (completionsDayOfEpochSet.has(currentDay + 1)) {
+                    currentDay += 1;
+                    currentStreak += 1;
+                }
+                longestStreak = Math.max(longestStreak, currentStreak);
+            }
+        }
+
+        res.send({
+            latest: latest,
+            longestStreak: longestStreak
+            // currentStreak: currentStreak
+        })
+    } catch (err) {
+        res.json({ message: err.message, success: false })
+    }
+}
