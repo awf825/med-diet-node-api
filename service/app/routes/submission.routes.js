@@ -5,8 +5,9 @@ module.exports = app => {
 
   var router = require("express").Router();
 
-  router.post("/submit", middleware.authenticateWebToken, submissions.submit);
-  // router.post("/submit", submissions.submit);
+  // router.post("/submit", middleware.authenticateWebToken, submissions.submit);
+  router.get("/test", submissions.test);
+  router.post("/submit", submissions.submit);
   // router.get("/", middleware.authenticateWebToken, submissions.getAll);
   router.get("/", submissions.getAll);
 
