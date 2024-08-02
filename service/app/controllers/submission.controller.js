@@ -5,63 +5,10 @@ const User = db.user;
 const Op = db.Sequelize.Op;
 const sequelize = db.sequelize;
 
-exports.test = async (req, res) => {
-    try {
-        const ffqBaseline = await sequelize.query(
-            `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
-            fdm.daily_question_id,  dt.amount, dt.indicator, \
-            if(dt.indicator > 0, \
-            sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
-            sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
-            ) as success \
-            from question_answers qa \
-            join questions q on q.question_id = qa.question_id \
-            join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
-            join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
-            where qa.question_answer_submission_id = :submission_id \
-            group by fdm.daily_question_id  \
-            order by fdm.daily_question_id;
-            `,
-            { 
-                replacements: {
-                    // submission_id: insertedSubmission?.submission_id 
-                    submission_id: 8
-                }
-            }
-        )
-
-        const ffqScoreResults = ffqBaseline[0];
-
-        const newDailySubmission = await Submission.create({
-            // user_id: req.user.user_id,
-            user_id: 1,
-            form_id: 2,
-            score: ffqScoreResults.reduce((acc, curr) => { return acc + curr.success }, 0),
-            completed_at: db.sequelize.fn('NOW')
-        })
-
-        if (newDailySubmission) {
-            await Answer.bulkCreate(
-                ffqScoreResults.map(s => {
-                    return {
-                        answer_score: s.success,
-                        question_id: s.daily_question_id,
-                        question_answer_submission_id: newDailySubmission.submission_id
-                    }
-                })
-            )
-        } else {
-            console.error('could not create this entry for d-25')
-        }
-
-    } catch (err) {
-        console.error('err')
-        res.json({ message: err.message, success: false })
-    }
-}
-
 exports.submit = async (req, res) => {
     const { answers, form_id } = req.body;
+
+    console.log('req.user: ', req.user)
 
     try {
         const insertedSubmission = await Submission.create({
@@ -71,7 +18,7 @@ exports.submit = async (req, res) => {
             completed_at: db.sequelize.fn('NOW')
         })
 
-        if (insertedSubmission) {
+        if (insertedSubmission.submission_id) {
             await Answer.bulkCreate(
                 answers.map(s => {
                     return {
@@ -81,6 +28,51 @@ exports.submit = async (req, res) => {
                     }
                 })
             )
+
+            const ffqBaseline = await sequelize.query(
+                `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
+                fdm.daily_question_id,  dt.amount, dt.indicator, \
+                if(dt.indicator > 0, \
+                sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
+                sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
+                ) as success \
+                from question_answers qa \
+                join questions q on q.question_id = qa.question_id \
+                join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
+                join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
+                where qa.question_answer_submission_id = :submission_id \
+                group by fdm.daily_question_id  \
+                order by fdm.daily_question_id;
+                `,
+                { 
+                    replacements: {
+                        submission_id: insertedSubmission?.submission_id
+                    }
+                }
+            )
+    
+            const ffqScoreResults = ffqBaseline[0];
+    
+            const newDailySubmission = await Submission.create({
+                user_id: req.user.user_id,
+                form_id: 2,
+                score: ffqScoreResults.reduce((acc, curr) => { return acc + curr.success }, 0),
+                completed_at: db.sequelize.fn('NOW')
+            })
+    
+            if (newDailySubmission) {
+                await Answer.bulkCreate(
+                    ffqScoreResults.map(s => {
+                        return {
+                            answer_score: s.success,
+                            question_id: s.daily_question_id,
+                            question_answer_submission_id: newDailySubmission.submission_id
+                        }
+                    })
+                )
+            } else {
+                console.error('could not create this entry for d-25')
+            }
 
             res.json({
                 submission: insertedSubmission,
@@ -111,19 +103,61 @@ exports.getAll = async (req, res) => {
     });
 }
 
-exports.getAnswersByCategory = async (req, res) => {
+exports.getDashboard = async (req, res) => {
     try {
-        const result = await sequelize.query(
-            'select count(qa.answer_score) as answer_number, SUM(qa.answer_score) as score, qc.category_display_name, qc.question_category_id, qc.display_hex_code from question_answer_submissions qas join question_answers qa ON qa.question_answer_submission_id = qas.submission_id JOIN questions q ON q.question_id = qa.question_id join question_categories qc on qc.question_category_id = q.category_id where qc.question_category_id != 9 and qas.user_id = :user_id group by qc.question_category_id', 
+        const answersByCategory = await sequelize.query(
+            'select count(qa.answer_score) as answer_number, \
+            SUM(qa.answer_score) as score, qc.category_display_name, qc.question_category_id, qc.display_hex_code \
+            from question_answer_submissions qas \
+            join question_answers qa ON qa.question_answer_submission_id = qas.submission_id \
+            JOIN questions q ON q.question_id = qa.question_id \
+            join question_categories qc on qc.question_category_id = q.category_id \
+            where qc.question_category_id != 9 and qas.user_id = :user_id \
+            group by qc.question_category_id', 
             { 
                 replacements: {
-                    // user_id: req.user.user_id
-                    user_id: 1 
+                    user_id: req.user.user_id
+                }
+            }
+        )
+        
+        const ffq = await Submission.findOne({
+            where: {
+                user_id: req.user.user_id,
+                form_id: 1
+            }
+        })
+
+        const submissionId = await ffq.get('submission_id')
+
+        console.log('submissionId: ', submissionId)
+
+        const ffqBaseline = await sequelize.query(
+            `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
+            fdm.daily_question_id,  dt.amount, dt.indicator, \
+            if(dt.indicator > 0, \
+            sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
+            sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
+            ) as success \
+            from question_answers qa \
+            join questions q on q.question_id = qa.question_id \
+            join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
+            join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
+            where qa.question_answer_submission_id = :submission_id \
+            group by fdm.daily_question_id  \
+            order by fdm.daily_question_id;
+            `,
+            { 
+                replacements: {
+                    submission_id: submissionId
                 }
             }
         )
 
-        res.send(result[0]);
+        res.send({
+            answersByCategory: answersByCategory[0],
+            ffqBaseline: ffqBaseline[0]
+        });
     } catch (err) {
         console.log('err: ', err)
         res.status(500).send({

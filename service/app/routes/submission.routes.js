@@ -5,14 +5,14 @@ module.exports = app => {
 
   var router = require("express").Router();
 
-  // router.post("/submit", middleware.authenticateWebToken, submissions.submit);
-  router.get("/test", submissions.test);
-  router.post("/submit", submissions.submit);
+  router.post("/submit", middleware.authenticateWebToken, submissions.submit);
+  // router.get("/test", submissions.test);
+  // router.post("/submit", submissions.submit);
   // router.get("/", middleware.authenticateWebToken, submissions.getAll);
   router.get("/", submissions.getAll);
 
-  // router.get("/getAnswersByCategory", middleware.authenticateWebToken, submissions.getAnswersByCategory);
-  router.get("/getAnswersByCategory", submissions.getAnswersByCategory);
+  router.get("/getDashboard", middleware.authenticateWebToken, submissions.getDashboard);
+  // router.get("/getAnswersByCategory", submissions.getAnswersByCategory);
 
   /* GET TIME OF COMPLETION AND SCORE OF LATEST SUBMISSION */
   // router.get("/getLatestSubmissionAndStreaks", middleware.authenticateWebToken, submissions.getLatestSubmissionAndStreaks);

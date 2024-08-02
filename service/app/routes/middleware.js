@@ -12,7 +12,7 @@ module.exports = {
                 if (err) {
                     console.log('jwt verify err LOCAL: ', err)
                     return res.sendStatus(403);
-                } else if (new Date(user.exp) < Date.now()) {
+            } else if (new Date(user.exp) < Date.now()) {
                     return res.sendStatus(403);
                 } else {
                     req.user = user;
