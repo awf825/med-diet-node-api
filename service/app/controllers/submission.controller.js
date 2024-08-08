@@ -8,8 +8,6 @@ const sequelize = db.sequelize;
 exports.submit = async (req, res) => {
     const { answers, form_id } = req.body;
 
-    console.log('req.user: ', req.user)
-
     try {
         const insertedSubmission = await Submission.create({
             user_id: req.user.user_id,
@@ -29,50 +27,53 @@ exports.submit = async (req, res) => {
                 })
             )
 
-            const ffqBaseline = await sequelize.query(
-                `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
-                fdm.daily_question_id,  dt.amount, dt.indicator, \
-                if(dt.indicator > 0, \
-                sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
-                sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
-                ) as success \
-                from question_answers qa \
-                join questions q on q.question_id = qa.question_id \
-                join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
-                join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
-                where qa.question_answer_submission_id = :submission_id \
-                group by fdm.daily_question_id  \
-                order by fdm.daily_question_id;
-                `,
-                { 
-                    replacements: {
-                        submission_id: insertedSubmission?.submission_id
-                    }
-                }
-            )
-    
-            const ffqScoreResults = ffqBaseline[0];
-    
-            const newDailySubmission = await Submission.create({
-                user_id: req.user.user_id,
-                form_id: 2,
-                score: ffqScoreResults.reduce((acc, curr) => { return acc + curr.success }, 0),
-                completed_at: db.sequelize.fn('NOW')
-            })
-    
-            if (newDailySubmission) {
-                await Answer.bulkCreate(
-                    ffqScoreResults.map(s => {
-                        return {
-                            answer_score: s.success,
-                            question_id: s.daily_question_id,
-                            question_answer_submission_id: newDailySubmission.submission_id
+            if (form_id === 1) {
+                const ffqBaseline = await sequelize.query(
+                    `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
+                    fdm.daily_question_id,  dt.amount, dt.indicator, \
+                    if(dt.indicator > 0, \
+                    sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
+                    sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
+                    ) as success \
+                    from question_answers qa \
+                    join questions q on q.question_id = qa.question_id \
+                    join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
+                    join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
+                    where qa.question_answer_submission_id = :submission_id \
+                    group by fdm.daily_question_id  \
+                    order by fdm.daily_question_id;
+                    `,
+                    { 
+                        replacements: {
+                            submission_id: insertedSubmission?.submission_id
                         }
-                    })
+                    }
                 )
-            } else {
-                console.error('could not create this entry for d-25')
+        
+                const ffqScoreResults = ffqBaseline[0];
+        
+                const newDailySubmission = await Submission.create({
+                    user_id: req.user.user_id,
+                    form_id: 2,
+                    score: ffqScoreResults.reduce((acc, curr) => { return acc + curr.success }, 0),
+                    completed_at: db.sequelize.fn('NOW')
+                })
+        
+                if (newDailySubmission) {
+                    await Answer.bulkCreate(
+                        ffqScoreResults.map(s => {
+                            return {
+                                answer_score: s.success,
+                                question_id: s.daily_question_id,
+                                question_answer_submission_id: newDailySubmission.submission_id
+                            }
+                        })
+                    )
+                } else {
+                    console.error('could not create this entry for d-25')
+                }
             }
+
 
             res.json({
                 submission: insertedSubmission,
@@ -130,21 +131,18 @@ exports.getDashboard = async (req, res) => {
 
         const submissionId = await ffq.get('submission_id')
 
-        console.log('submissionId: ', submissionId)
-
         const ffqBaseline = await sequelize.query(
             `select sum((qa.answer_score * fdm.grams_per_recommended_serving)) as 'sum_units', \
-            fdm.daily_question_id,  dt.amount, dt.indicator, \
-            if(dt.indicator > 0, \
-            sum((qa.answer_score * fdm.grams_per_recommended_serving)) > dt.amount, \
-            sum((qa.answer_score * fdm.grams_per_recommended_serving)) < dt.amount \
-            ) as success \
+            fdm.daily_question_id,  dt.amount, dt.indicator, dt.formula, \
+            qq.question_text, qq.field_code, qc.question_category_id  \
             from question_answers qa \
             join questions q on q.question_id = qa.question_id \
+            join question_categories qc on qc.question_category_id = q.category_id \
             join ffq_daily_map fdm on fdm.ffq_question_id = q.question_id \
+            join questions qq on qq.question_id = fdm.daily_question_id
             join daily_thresholds dt on dt.question_id = fdm.daily_question_id \
             where qa.question_answer_submission_id = :submission_id \
-            group by fdm.daily_question_id  \
+            group by fdm.daily_question_id \
             order by fdm.daily_question_id;
             `,
             { 
@@ -154,9 +152,32 @@ exports.getDashboard = async (req, res) => {
             }
         )
 
+        const ffqObjArr = ffqBaseline[0]
+
+        const ffqResponse = ffqObjArr.map(x => {
+            let evaluation;
+            let success;
+            const formula = x.formula;
+            if (formula && formula !== 'OR') {
+                replacedWithSum = formula.replace('S', String(x.sum_units))
+                evaluation = eval(replacedWithSum)
+            }
+
+            if (x.indicator > 0) {
+                success = evaluation ? evaluation > x.amount : x.sum_units > x.amount
+            } else {
+                success = evaluation ? evaluation < x.amount : x.sum_units < x.amount
+            }
+
+            return {
+                ...x,
+                success: success
+            }
+        })
+
         res.send({
             answersByCategory: answersByCategory[0],
-            ffqBaseline: ffqBaseline[0]
+            ffqResponse: ffqResponse
         });
     } catch (err) {
         console.log('err: ', err)
